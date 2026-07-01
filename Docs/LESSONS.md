@@ -4,6 +4,31 @@ Running log of hard-won, non-obvious findings — bugs, tool quirks, workarounds
 
 ---
 
+## 2026-07-01 (PM) — The "freeze / can't move" was a STACK of issues; the finale was a focus throttle + unreliable measurement
+
+### Meta-lesson (most important): when you cannot OBSERVE the running game, STOP guessing
+After the unreal-mcp connection dropped (editor closed mid-session), I diagnosed framerate/perf **blind from logs** for a very long stretch and formed several confident-but-wrong hypotheses in a row (RTX 50-series render bottleneck, driver regression, GPU downclock, shader-compile stall). Every one was a guess over evidence I couldn't actually see. The debugging discipline (read evidence → one hypothesis → verify the mechanism) collapses without observation — restore observation FIRST. Once MCP was back, the reliable signals resolved it in minutes.
+
+### Reconnecting unreal-mcp after it drops (it can't reconnect in-session)
+The connection is made once, at Claude Code session start. If the editor closes mid-session the tools go dead and `ToolSearch` returns nothing for the rest of that session — **there is no in-session reconnect.** Recovery: relaunch the editor WITH `-ExecCmds=ModelContextProtocol.StartServer`, clear anything blocking a clean load (GameFeatureData dialog below), confirm port 8000 listening, then **restart Claude Code** — the fresh session hooks straight into the running server. State survives via git + the CLAUDE.md handoff note.
+
+### The actual root causes (several, stacked — none was "the input")
+1. **Invisible character** — `BP_PlayerCharacter.CharacterMesh0.SkeletalMeshAsset = None`. Fixed via `ObjectTools.set_properties` on the CDO (`...Default__BP_PlayerCharacter_C:CharacterMesh0`), assigning `SKM_Manny_Simple`. NOTE `set_properties` takes `values` as a **JSON string**, not an object.
+2. **Broken character asset (READ THE LOAD ERRORS FIRST — the user had to point me here).** `LogAssetRegistry`/`LoadErrors` showed `SK_Mannequin` (skeleton) + `PA_Mannequin` (physics) **MISSING** and 13 zero-byte `.uasset` (Manny/Quinn materials, textures, rigs, touch UI). A skeletal mesh with no skeleton = broken character. **Restore source:** `C:\Program Files\Epic Games\UE_5.8\Templates\TemplateResources\High\{Characters,Input}\Content\` — copy the whole `Mannequins/` tree (+ `Touch/`) over the project's. Paths match exactly, `SKM_Manny_Simple` is byte-identical, and it ships a full anim set + **`ABP_Unarmed`**. Result: 0 zero-byte uassets, Manny renders correctly.
+3. **The "3 fps freeze" was Unreal's not-foreground throttle, NOT a perf problem.** With the editor window not the OS-foreground app, the GPU **idles at 3% util and downclocks to 1852 MHz**; forced to foreground it jumps to **2800 MHz** (full clock) at only ~10% util — the grey box is trivial for an RTX 5080. Stripping Lumen/MegaLights/VSM/clouds did nothing because the GPU was never the bottleneck. Mitigations set: `t.IdleWhenNotForeground=0` ([SystemSettings]) + `bThrottleCPUWhenNotForeground=False` (EditorPerformanceSettings). The reliable user workaround: keep the game window as the active/focused window.
+
+### Reliable vs UNRELIABLE runtime measurement (this cost hours)
+- **UNRELIABLE — the log `[N]` frame counter.** NOT a clean monotonic per-frame counter: it resets on PIE restart and jumps around. I derived "~1-3 fps" from it repeatedly and it was noise. **Never derive fps from it.**
+- **RELIABLE — the pawn's world position.** `ObjectTools.get_properties` on the Character's root (`CollisionCylinder`) `RelativeLocation`, vs the `PlayerStart` root (`CollisionCapsule`). Game state, independent of rendering/throttle. This PROVED movement works: pawn walked spawn `x=100` → `x=645` under a frozen-looking display. Use this to prove movement, not screenshots.
+- **RELIABLE — `nvidia-smi`** (`utilization.gpu, clocks.current.graphics, power.draw, clocks_event_reasons.*`). Idle clock (~1852 MHz)+low util = throttled/idle; full clock (~2800 MHz) = actively rendering. This exposed the throttle.
+- **Windows blocks `SetForegroundWindow` from a background/automation process**, so I cannot reliably force the game window foreground to observe un-throttled rendering — every capture was of a throttled/unfocused window (hence "display frozen" while the pawn actually moved).
+
+### Tool notes
+- **`stat unit`/`stat fps` could not be enabled from automation:** neither `ExecuteConsoleCommand("stat unit")` in BeginPlay nor typing into the editor Cmd bar rendered the overlay while throttled. Synthetic Slate keys reach neither Enhanced Input nor the game console.
+- **SlateInspector is the observation/control channel** (computer-use still can't reach Unreal — not a Start-menu app, masked in screenshots): `Windows`, `Snapshot` (find refs), `Click`, `Type`, `PressKey`. The editor Cmd console is the textbox `tb2` in the bottom status bar — `Click` it to focus, then `Type` with `submit:true`.
+- **GameFeatureData startup dialog** ("Add entry to PrimaryAssetTypesToScan?") blocks a clean load — fix in `Config/DefaultGame.ini`: `[/Script/Engine.AssetManagerSettings]` + `+PrimaryAssetTypesToScan=(PrimaryAssetType="GameFeatureData",AssetBaseClass=/Script/GameFeatures.GameFeatureData,bHasBlueprintClasses=False,bIsEditorOnly=False,Directories=((Path="/Game")),Rules=(Priority=-1))`.
+- **Every render-cvar change forces a full shader recompile** → slow first PIE; don't confuse that with a persistent perf problem.
+
 ## 2026-07-01 — Session: "WASD still can't move" was the invisible character, NOT input
 
 ### The real bug: the character's Mesh component had `SkeletalMeshAsset = None` (Manny was invisible)

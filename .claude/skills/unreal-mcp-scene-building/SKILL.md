@@ -50,6 +50,11 @@ Place a `PhysicsVolume` actor (not a Blueprint — it can't be one), scale to si
 - `EditorAppToolset.StartPIE(options={bSimulate:false, playMode:"PlayMode_InViewPort", warmupSeconds:1})` — completes after BeginPlay + warmup. `bSimulate:true` ticks the world without possessing a pawn (good for observing AI/physics later).
 - `IsPIERunning()`, then inspect state / `CaptureViewport`, then `StopPIE()`.
 - Note: MCP can't inject player input, so PIE verifies spawn/possession, GameMode wiring, and that the level loads and runs cleanly. Feel-testing the actual movement verbs (does sprint feel fast? does vault clear the wall?) is a human Play pass against `Docs/02_MVP_Vertical_Slice.md` §4 — call that out rather than claiming verified.
+- **Measuring at runtime — screenshots and the log frame counter LIE; use these instead (learned the hard way, LESSONS 2026-07-01 PM):**
+  - **Prove movement via game state, not pixels:** read the pawn's root location — `ObjectTools.get_properties(<pawn>.CollisionCylinder, ["RelativeLocation"])` — vs the `PlayerStart` root (`CollisionCapsule`). Independent of whether the display draws. This is how movement got *proven* (pawn walked spawn x=100 → x=645). To drive movement without input, temporarily add `EventTick → Pawn|Input|AddMovementInput((1,0,0), 1, bForce=true)` to the character, then delete it.
+  - **The editor throttles its display to ~3 fps and idles the GPU when its window is NOT the OS-foreground app** → `CaptureEditorImage` returns identical (frozen-looking) frames while the game ticks underneath. Automation can't reliably force OS foreground (Windows blocks `SetForegroundWindow` from background procs). Don't conclude "frozen/slow" from a screenshot — check pawn position (moving?) and `nvidia-smi` (`clocks.current.graphics` ~2800 MHz = rendering; ~1852 MHz + ~3% util = throttled/idle).
+  - **The log `[N]` frame number is NOT a reliable fps counter** (resets on PIE restart, non-monotonic). Never derive fps from it.
+  - `stat unit`/`stat fps` can't be enabled from automation (BeginPlay `ExecuteConsoleCommand` and the editor Cmd bar didn't render the overlay; synthetic Slate keys reach neither Enhanced Input nor the game console).
 
 ## Discipline
 
