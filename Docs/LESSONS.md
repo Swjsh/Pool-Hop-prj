@@ -4,6 +4,19 @@ Running log of hard-won, non-obvious findings — bugs, tool quirks, workarounds
 
 ---
 
+## 2026-06-30 — Overnight: design package + Step 1 + MCP buildability spikes
+
+### MCP buildability map — what the unreal-mcp toolset CAN and CANNOT author (spiked)
+Ran probes before building Systems 2–5. Results (these bound the whole build plan):
+- **CAN build via MCP:** Blueprint classes (`BlueprintTools.create`), member variables + replication (`add_variable`/`set_variable_replication` — RepNotify auto-creates `OnRep_`), function/event graphs + DSL logic (`write_graph_dsl`/`create_node`/`connect_pins`), components (`ActorTools.add_component`), actor placement (`SceneTools`), materials (`MaterialTools`), Data Assets (`DataAssetTools.create`), Data Tables (`DataTableTools`).
+- **CANNOT build via MCP (need in-editor or a future tool):**
+  - **Blueprint Enums / Structs** — no creation tool; `execute_tool_script` (ProgrammaticToolset) only allows stdlib modules (`json/math/re/time/datetime/copy`) and `execute_tool()`, **cannot `import unreal`**. → interim: use `byte`/`int` for enum-typed vars (see CANON.md), create real enums in-editor.
+  - **RPC flags ("Run on Server / Reliable") on custom events** — `K2Node_CustomEvent`'s `FunctionFlags`/`bIsNetExecutedOnServer`/`bIsNetReliable` are not readable/settable via `ObjectTools` (`list_properties` returns only `errorMsg`, like the EnhancedInputAction node). → interim: build `Server_*` functions as **regular functions with a `HasAuthority` guard** — identical behavior in single-player (local player IS the server); mark them Run-on-Server in-editor as part of the Phase 2 netcode layer. The authority *logic + state location* is what the discipline requires now; the RPC *decoration* is the Phase-2 transport.
+  - **Behavior Tree / Blackboard** — `aimodule_toolset...BehaviorTreeTools` is **inspect-only**. Step 4's `BT_Watcher`/`BB_Watcher` need in-editor authoring (or `execute_tool_script` can't help — no `unreal`). The AI *perception* + BP logic is buildable; the BT asset is not.
+  - **UMG widget-tree authoring** — the `UMGToolSet` exists but adding widgets/bindings/animations to a `UserWidget` is unproven via MCP; treat Step 7 HUD as in-editor.
+  - **Niagara / EQS** — unconfirmed; use material/decal + hand-authored fallbacks first.
+**Takeaway for the loop:** autonomously buildable = Step 1 (done), Step 2 Loudness logic, Step 3 Pool scoring, Step 5/6 component logic (all with regular-function interim). NOT autonomously buildable = Step 4 BT, Step 7 UMG, and RPC-flagging. Those are the "needs the user in-editor" pile.
+
 ## 2026-06-30 — Session: System 1 (movement)
 
 ### PIE froze at "Recreating Persistent SBTs" — template Lumen hardware ray tracing deadlocked
