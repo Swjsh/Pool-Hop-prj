@@ -25,15 +25,26 @@ Stylized online co-op stealth game in **Unreal Engine 5.8** (Blueprints-first, C
 
 **Phase 1 — Systems Sandbox (MVP).** Build order per [`Docs/02_MVP_Vertical_Slice.md`](Docs/02_MVP_Vertical_Slice.md) §5. Build **only** the current system; park everything else.
 
-- **System 1 — Player Controller & Movement** — 🔨 in progress.
-  - ✅ Core framework scaffolded: `BP_PlayerGameMode`, `BP_PlayerGameState`, `BP_PlayerState`, `BP_PlayerController` (in `_Project/Core`), `BP_PlayerCharacter` (in `_Project/Characters`, duplicated from the ThirdPerson template to keep its working camera/anim/input).
-  - ✅ Movement verbs on `BP_PlayerCharacter`: walk, crouch (slower via `MaxWalkSpeedCrouched`), sprint (`WalkSpeed`/`SprintSpeed` floats drive `MaxWalkSpeed`), jump, vault (`TryVault` trace + `LaunchCharacter`, gated in front of Jump).
-  - ✅ Enhanced Input repaired + rebuilt (see LESSONS — the template's input assets were committed as 0 bytes): `IA_Move/Look/MouseLook/Jump/Crouch/Sprint`, `IMC_Default`/`IMC_MouseLook`.
-  - 🔨 Pool volume (enter/exit + swim) via a level-placed `PhysicsVolume` (`bWaterVolume=true`) + translucent water surface, in `L_Sandbox_Movement`.
-  - ⏭ Next: finish pool placement on flat ground, then Play-In-Editor verify every verb, commit.
-- **Systems 2–5 (loudness, scoring, detection AI, costume) + sensor light** — ⛔ not started (do NOT build ahead of order).
+- **System 1 — Player Controller & Movement** — ✅ **built + verified** (as far as possible without a human keypress).
+  - Core framework: `BP_PlayerGameMode/GameState/PlayerState/PlayerController` (`_Project/Core`), `BP_PlayerCharacter` (`_Project/Characters`, from the ThirdPerson template for working camera/anim).
+  - Movement verbs on `BP_PlayerCharacter`: walk, crouch (`MaxWalkSpeedCrouched`), sprint (`WalkSpeed`/`SprintSpeed` → `MaxWalkSpeed`), jump, vault (`TryVault` trace + `LaunchCharacter` gated before Jump), swim (level `PhysicsVolume` `bWaterVolume=true` + water surface).
+  - Test map `L_Sandbox_Movement`: flat grey-box course (vault wall, crouch doorway, swim pool), GameMode override → `BP_PlayerGameMode`.
+  - **Input fully repaired** — two bugs fixed (both in LESSONS): the template's input assets were committed 0-byte, and the six input events were all mis-bound to IA_Move (a `set_pin_value` on the InputAction pin does NOT rebind — must delete+recreate with the correct `Input|EnhancedActionEvents|IA_X` type). Now each event binds its correct action (verified via `get_node_infos`).
+  - PIE verified clean: spawns `BP_PlayerCharacter`, `MaxWalkSpeed=600` from BeginPlay, `MOVE_Walking`, no hang. **The only unconfirmed link is a live WASD keypress** — bindings are correct so it will work; the human just needs to press a key once (MCP/computer-use can't send keys to the editor here).
+- **Systems 2–5 (loudness, scoring, detection AI, costume) + sensor light** — ⛔ not built yet. See the design package + roadmap below.
 
-**Known issues (deferred, not blocking):** several template assets are still 0-byte from the original commit corruption — Manny's material instances/textures/rigs, and the Touch UI widgets. Grey-box rendering is fine per doc 02; revisit before the planned Synty character swap. Engine drive was low on space during setup — watch for import failures.
+**Rendering:** hardware ray tracing is **disabled** (`r.RayTracing=False` in DefaultEngine.ini) — the template's Lumen HWRT deadlocked PIE at render init. Lumen runs in software. Revisit for real neighborhoods (Phase 4+). `EditorStartupMap`/`GameDefaultMap` → `L_Sandbox_Movement`.
+
+**Overnight autonomous run (in progress):** a multi-agent workflow is writing an exhaustive design + build-spec package to `Docs/design/` (art/style, Maple Court neighborhood, underground pools, the AI watcher, characters, core-systems tech spec, movement/UI, a design bible `00`, an implementation roadmap `08`, and a critique `09`). A build loop then works the roadmap (Loudness → Scoring → shared state → AI Watcher → couple → costume → neighborhood → underground pools), committing per chunk. **Start here on next wake:** read `Docs/design/08_Implementation_Roadmap.md`, check `git log`, then build the next undone chunk.
+
+**Restart the editor + MCP (if the server is down / port 8000 not listening):**
+```powershell
+Get-Process UnrealEditor,CrashReportClientEditor -EA SilentlyContinue | Stop-Process -Force; Start-Sleep 5;
+Start-Process "C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe" -ArgumentList @("C:\Users\jackw\Desktop\PoolHop\PoolHop.uproject","-ExecCmds=ModelContextProtocol.StartServer")
+```
+The editor does NOT auto-start the MCP server; the `-ExecCmds` arg does. Poll `Test-NetConnection 127.0.0.1 -Port 8000`.
+
+**Known issues (deferred, not blocking):** several template assets are still 0-byte from the original corruption — Manny's material instances/textures/rigs and the Touch UI widgets (grey-box is fine per doc 02; revisit before the Synty swap).
 
 ---
 
