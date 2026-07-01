@@ -31,7 +31,13 @@ Stylized online co-op stealth game in **Unreal Engine 5.8** (Blueprints-first, C
   - Test map `L_Sandbox_Movement`: flat grey-box course (vault wall, crouch doorway, swim pool), GameMode override → `BP_PlayerGameMode`.
   - **Input fully repaired** — two bugs fixed (both in LESSONS): the template's input assets were committed 0-byte, and the six input events were all mis-bound to IA_Move (a `set_pin_value` on the InputAction pin does NOT rebind — must delete+recreate with the correct `Input|EnhancedActionEvents|IA_X` type). Now each event binds its correct action (verified via `get_node_infos`).
   - PIE verified clean: spawns `BP_PlayerCharacter`, `MaxWalkSpeed=600` from BeginPlay, `MOVE_Walking`, no hang. **The only unconfirmed link is a live WASD keypress** — bindings are correct so it will work; the human just needs to press a key once (MCP/computer-use can't send keys to the editor here).
-- **Systems 2–5 (loudness, scoring, detection AI, costume) + sensor light** — ⛔ not built yet. See the design package + roadmap below.
+- **Step 1 — Authoritative framework state** — ✅ built. 16 server-authoritative vars on `BP_PlayerGameState`/`BP_PlayerState` (canonical names per `Docs/design/CANON.md`), correct replication, compiled clean.
+- **Step 2 — LoudnessComponent** — 🔨 core built. `BP_LoudnessComponent` attached to the character as `LoudnessComp`: `CurrentLoudness` (RepNotify) + tuning, `AddLoudness`/`GetLoudness01`, and an Event-Tick-driven `TickLoudness` (asymmetric rise-to-band / decay-to-idle). **Next:** wire the character's sprint→`bIsSprinting`, swim→`bIsInWater`, vault→`AddLoudness(30)`; then `ReportNoise` (Step 4, needs the AI). Server-RPC wrappers are Phase-2 (MCP can't set the flags — LESSONS).
+- **Systems 3–5 (scoring, detection AI, costume) + sensor light** — ⛔ not built. See `Docs/design/08_Implementation_Roadmap.md`.
+
+**Autonomous-build ceiling (spiked, in LESSONS):** MCP can build variables/graphs/components/materials/actors but CANNOT create Blueprint enums/structs, set Run-on-Server RPC flags, or author Behavior Trees / UMG widgets — and computer-use can't reach the editor window here. So the **AI-Watcher Behavior Tree (Step 4) and the HUD (Step 7) need the user in-editor**; the loop builds everything else. Interim: enums→`byte`, RPCs→regular `HasAuthority` functions.
+
+**Project 42 reaper:** verified safe — it only kills processes referencing `Desktop\42`'s workdir; ours don't, and the editor isn't a candidate. The loop also self-heals the editor+MCP if port 8000 drops (LESSONS).
 
 **Rendering:** hardware ray tracing is **disabled** (`r.RayTracing=False` in DefaultEngine.ini) — the template's Lumen HWRT deadlocked PIE at render init. Lumen runs in software. Revisit for real neighborhoods (Phase 4+). `EditorStartupMap`/`GameDefaultMap` → `L_Sandbox_Movement`.
 
