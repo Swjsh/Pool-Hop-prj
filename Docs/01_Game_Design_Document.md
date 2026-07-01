@@ -155,6 +155,7 @@ Playful, nostalgic, a little mischievous — **never mean-spirited or criminal-f
 
 ## 13. Open Questions / To Decide Later
 
+- **Should homeowner/watch/cop be player-controlled (asymmetric hunter) instead of AI? — RESOLVED: no, not for MVP.** Researched against Dead by Daylight/Evil Dead/TCM-style asymmetric design (see `06_Hunter_Antagonist_Design_Research.md`). A dedicated hunter role recreates the genre's well-documented "someone sits out and resents it" failure mode for small friend groups, and cuts against the "Better With Friends" pillar (§3) by making a friend the enemy. Keep pure AI antagonists through Phase 1-3. Optional temporary possession of an existing AI threat (Left 4 Dead Versus model — never removing a teammate from co-op to create a hunter) is flagged as a possible Phase 5+ stretch feature, not before.
 - Exact player count sweet spot (4? 6? full 8?) — tune during co-op milestone.
 - Is "getting caught" per-player (detained/rescue) or does it end the crew's run? (Leaning per-player detain + rescue.)
 - Persistent progression vs per-session roguelike scoring — likely a blend (cosmetic persistence + per-run score runs).

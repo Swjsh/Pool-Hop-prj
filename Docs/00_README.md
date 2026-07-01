@@ -26,6 +26,8 @@ You and 2–8 friends slip out at midnight, cut through backyards, and hop from 
 | 03 | **[Technical Architecture](03_Technical_Architecture.md)** | UE 5.8 setup, the server-authoritative co-op model, AI/detection with AI Perception, the Claude↔Unreal MCP workflow + safety rules, folder structure, phased roadmap. The *how*. |
 | 04 | **[Research Findings](04_Research_Findings.md)** | Sourced research: UE 5.8 + official MCP, free/stylized assets + licensing, and first-game/co-op/stealth best practices. Every claim cited. |
 | 05 | **[Virality & Market Research](05_Virality_And_Market_Research.md)** | What's breaking out in indie co-op right now (PEAK, R.E.P.O., Content Warning, "friendslop"), monetization/pricing, what makes a design clip-worthy, and launch strategy — with concrete, ranked recommendations for Pool Hop. |
+| 06 | **[Hunter/Antagonist Design Research](06_Hunter_Antagonist_Design_Research.md)** | Should the homeowner/watch/cop be a player-controlled hunter (Dead by Daylight-style) instead of AI? Researched against the asymmetric-multiplayer genre. Resolved: no, not for MVP — see GDD §13. |
+| 07 | **[Movement, Physics & UI Research](07_Movement_Physics_UI_Research.md)** | What makes third-person movement feel good, how far to push physics comedy without frustration, swim/water traversal precedent, and stealth-detection UI conventions — with concrete changes for Systems 1 and 4. |
 
 ---
 
