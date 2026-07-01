@@ -4,6 +4,25 @@ Running log of hard-won, non-obvious findings — bugs, tool quirks, workarounds
 
 ---
 
+## 2026-07-01 (LATE PM) — The "freeze" was never a freeze: it was a MOTIONLESS A-POSE STATUE. Game runs at 120 fps.
+
+**This supersedes the "focus throttle was the finale" framing below.** After a fresh session reconnected MCP, I measured the running game properly and the whole perf/throttle narrative collapsed: **the game renders at ~120 fps.** It was never frozen — not now, not when the user played.
+
+### The real root cause of the "it's frozen" perception
+`BP_PlayerCharacter.CharacterMesh0.AnimClass` was **`None`** (AnimationMode was already `AnimationBlueprint`, just no BP assigned). So Manny stood in a **rigid A-pose with zero idle motion**. A game running at 120 fps that shows a perfectly motionless mannequin is **visually identical to a frozen screenshot** — every time the user hit Play they saw a statue that didn't react, and reasonably called it "frozen / can't move." **Fix:** assign the restored `ABP_Unarmed` →
+`set_properties(...Default__BP_PlayerCharacter_C:CharacterMesh0, '{"AnimClass": {"refPath": "/Game/Characters/Mannequins/Anims/Unarmed/ABP_Unarmed.ABP_Unarmed_C"}}')` → `compile_blueprint` → `save_assets(["/Game/_Project/Characters/BP_PlayerCharacter"])`. Manny now idles/walks. Commit `d4073d2`.
+
+### Measuring fps reliably via MCP (correcting the "frame counter is useless" claim below)
+The log `[N]` frame counter **is** usable for fps — but ONLY across two samples **< ~1 s apart** so it can't wrap 1000 ambiguously. Fire two cheap tool calls back-to-back (each logs `Running tool` with an `[N]` + `HH.MM.SS.mmm` timestamp), then `GetLogEntries(pattern:"Running tool")`: e.g. `844 → 889` across `0.379 s` = **119 fps**. Over long gaps (10–50 s) the wrap ambiguity is what made it look like noise before — that was a sampling error, not the counter lying. **Second reliable signal: frame-to-frame pixel diff.** `CaptureEditorImage` twice ~1 s apart, decode both PNGs, diff the character-region crop — thousands of changed pixels = the scene is live-rendering AND the char is animating (this is how ABP_Unarmed was verified: A-pose→arms-down + ~4800 px/frame of motion).
+
+### The ONE thing MCP genuinely cannot test — a hardware keypress
+Enhanced Input ignores synthetic Slate keys (SlateInspector `PressKey` never reaches it), and **computer-use cannot target the Unreal window** — `request_access(["Unreal Editor","UnrealEditor","PoolHop"])` returns `notInstalled` (UE launched from a `.uproject` is not a Start-menu/registered app; screenshots would mask it). So the final link *hardware W → IA_Move → movement* cannot be self-verified via MCP. Everything **up to** that link is verified: 120 fps, GameMode spawns+possesses `BP_PlayerCharacter_C` (found `UEDPIE_0_..:PersistentLevel.BP_PlayerCharacter_C_0`), controller BeginPlay runs `AddMappingContext(IMC_Default)`→`SetInputMode_GameOnly` (mouse-capture at runtime **proves** the IMC applied), and `IA_Move`'s `Triggered`/`ActionValue` pins are wired to the Move function (`get_node_infos`, node type `EnhancedInputActionIA_Move`). If real WASD still doesn't move him, the only remaining suspect is **PIE keyboard focus in "Play in Selected Viewport"** — click once inside the game view, or use Play ▾ → "New Editor Window."
+
+### Meta-lesson (reinforces the one below): when the user says "frozen," MEASURE fps before ANY perf theory
+I burned two sessions on render/throttle theories for a game that was never below 120 fps. The tell I ignored: a motionless character is not the same as a stalled engine. First question must be "is the engine actually ticking?" (frame-counter delta over <1 s, or frame-to-frame pixel diff) — not "which render feature is slow?"
+
+---
+
 ## 2026-07-01 (PM) — The "freeze / can't move" was a STACK of issues; the finale was a focus throttle + unreliable measurement
 
 ### Meta-lesson (most important): when you cannot OBSERVE the running game, STOP guessing
