@@ -41,4 +41,9 @@ You and 2–8 friends slip out at midnight, cut through backyards, and hop from 
 1. **Read 01 (vision) and 02 (first build)** and mark anything you'd change — these are living docs.
 2. **Decide the open questions** flagged in the GDD §13 (player-count sweet spot, caught = detain vs run-ends, monetization — affects asset licensing).
 3. **Set up the project (Phase 0):** install UE 5.8, enable the Unreal MCP + AllToolsets plugins, wire up Claude Code, init Git + LFS, create the folder structure (Tech doc §5–6). I can walk you through this or help drive it.
-4. **Start the sandbox (Phase 1):** movement → pool scoring → loudness → de
+4. **Start the sandbox (Phase 1):** movement → pool scoring → loudness → detection AI → couple it → playtest. Judge only on "is it tense and repeatable?"
+
+> When you're ready, I can help scaffold the UE project and the first systems (via the MCP workflow), write the tuning data tables, or expand any of these docs (e.g. a detailed detection-tuning spec or a shot-list for the sandbox map).
+
+---
+*All figures/tooling claims verified against primary sources as of June 30, 2026. Prices and Experimental-feature details may shift — confirm on live pages.*
