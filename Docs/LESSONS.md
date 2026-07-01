@@ -4,6 +4,28 @@ Running log of hard-won, non-obvious findings — bugs, tool quirks, workarounds
 
 ---
 
+## 2026-07-01 — Session: "WASD still can't move" was the invisible character, NOT input
+
+### The real bug: the character's Mesh component had `SkeletalMeshAsset = None` (Manny was invisible)
+**Signature:** user hits Play, mouse gets captured ("mouse goes away" = game HAS focus + captured the cursor for mouse-look), the view looks "frozen," and pressing WASD seems to do nothing. **The input was fine the whole time.** The `CharacterMesh0` component on `BP_PlayerCharacter` had no skeletal mesh assigned (lost during the character's creation/duplication), so the possessed pawn was **invisible**. On a featureless grey-grid floor with no visible body, walking is imperceptible — it reads as a frozen game. **Fix:** `ObjectTools.set_properties` on `Default__BP_PlayerCharacter_C:CharacterMesh0` → `SkeletalMeshAsset = /Game/Characters/Mannequins/Meshes/SKM_Manny_Simple` (the mesh itself is valid, 15.8 MB; only its material instances `MI_Manny_*` are still 0-byte, so Manny renders solid **grey** via the default-material fallback — fine for grey-box). The Character base class already gives the mesh its correct relative transform (Z=-89, Yaw=-90), so no transform work needed. Verified visible in PIE. **No AnimBP exists in the project** (`find_assets ABP` → empty), so Manny is a static A-pose that slides — visible movement, no walk cycle yet (animation deferred).
+
+### `read_graph_dsl` CANNOT traverse Enhanced Input event exec chains — it lies "empty"
+**This nearly caused a wrong fix.** `read_graph_dsl` follows `then` exec pins; Enhanced Input event nodes output `Triggered`/`Started`/`Ongoing`/`Completed` (there is no `then` pin), so the reader silently can't walk them and renders EVERY input event with an **empty body** — even when they're fully wired. The UE log confirms it: `LogBlueprint: Warning: No then pin found on node ...EnhancedInputActionIA_*`. **Do NOT trust `read_graph_dsl` for input-event wiring.** Use `get_node_infos` (pin-level truth) — it correctly showed all six events wired to their handlers (Move/Aim/Jump/Crouch/Sprint). The input graph was 100% correct all along.
+
+### Verify PIE is actually live before believing any "it doesn't work" test — `IsPIERunning` first
+Multiple "can't move" tests were run against a **dead/stopped PIE** (`IsPIERunning` returned `false`; the `PlayerStart` billboard sprite was visible = editor mode, not PIE). Keys pressed into a stopped in-viewport session do nothing regardless of wiring. Also caught PIE ending on its own between calls. **Always confirm `IsPIERunning=true` (and ideally `CaptureEditorImage`) at the moment of the test.** PIE ending is a clean shutdown (`LogPlayLevel: Shutting down PIE online subsystems`), not a crash.
+
+### Keypress-free runtime proof: the auto-walk probe
+Can't send a hardware key from here, so to prove possession + movement pipeline work without input: temporarily add `EventTick → Pawn|Input|AddMovementInput(WorldDirection=(1,0,0), ScaleValue=1, bForce=true)`, start PIE, `CaptureEditorImage` before/after. The third-person camera follows the pawn, so the world visibly scrolls if movement works (it did — the character walked into the boxes). Delete the probe after. This isolates "does movement execute" from "does input arrive."
+
+### Synthetic Slate keys do NOT drive Enhanced Input (`SlateInspectorToolset.PressKey`)
+`SlateInspectorToolset` CAN find/focus the floating PIE window (`Windows`, `Snapshot`, `Click i6`) and inject key events, but Enhanced Input **polls the hardware input-device state**, so injected Slate `ProcessKeyDownEvent` keys never register with `IA_*` actions (no `Started`/`Triggered` fires). Useful for driving editor Slate UI; useless for testing Enhanced Input gameplay. Use the auto-walk probe instead.
+
+### Tool quirks logged this session
+- **`CaptureEditorImage`** returns a base64 PNG far over the inline token limit → it's written to a `tool-results/*.txt` file; extract the `"data":"..."` field with Python + `base64.b64decode` to a `.png`, then Read it. (`CaptureEditorImage` shows the whole editor incl. the floating PIE window — the way to "see" PIE without computer-use.)
+- **`ObjectTools.set_properties`** takes `values` as a **JSON-encoded string** (not a `properties` object). Component transforms may report "could not be set" yet still apply — re-read to confirm.
+- **computer-use still cannot target the editor** (confirmed again): `request_access` for `Unreal Editor`/`UnrealEditor`/`PoolHop` all fail (not Start-menu apps; fuzzy-matches "Registry Editor"). Use `CaptureEditorImage` + `SlateInspectorToolset` to observe/drive the editor instead.
+
 ## 2026-06-30 — Overnight: design package + Step 1 + MCP buildability spikes
 
 ### Project 42 (Gamma) process reaper does NOT target Pool Hop — verified, we're safe
