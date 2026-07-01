@@ -82,6 +82,18 @@ Replication legend: `None` = server-only/local; `Rep` = Replicated (read-only mi
 
 Deferred to their systems (not Step 1): `EquippedCostume` (soft DataAsset ref → Step 6, and soft-ref-via-MCP is unconfirmed — see LESSONS), the DataTable/struct-typed vars (Step 2).
 
+## Step 3 variable additions (pool scoring — not in the original Step-1 tables, added when building `06 §3`)
+`06`'s spec text implies these as tuning knobs/bookkeeping but doesn't list them in a variable table; canonizing here so they aren't re-invented differently next time:
+
+| Var | Type | Repl | Default | Lives on | Purpose |
+|---|---|---|---|---|---|
+| `CrewSplashBonusPerExtra` | float | None | 0.25 | `BP_PoolVolume` | Per-extra-occupant crew multiplier bonus, used by `GetCrewMultiplier` (§3.4 knob). |
+| `StreakStep` | float | None | 0.15 | `BP_PlayerGameMode` | Hop-streak multiplier step, used by `GetHopStreakMultiplier` (§3.4 knob). |
+| `StreakCap` | int | None | 6 | `BP_PlayerGameMode` | Hop-streak clamp cap (§3.4 knob). |
+| `VisitedPoolIDs` | Array\<Name\> | None | [] | `BP_PlayerState` | Server-only bookkeeping so `Server_RegisterPoolVisit` can tell whether a `PoolID` is new for this run; cleared on bank (`Server_BankAtRisk`) and on catch (`Server_LoseAtRisk`) alongside `DistinctPoolsHopped` reset. Not in `06`'s PlayerState table — needed because the spec's "is PoolID new for this PlayerState?" check has nothing else to check against. |
+
+**Scoring rule functions built as regular Functions (not Custom Events)**, per the existing `Server_*` → `HasAuthority`-guarded-function interim convention: `Server_AddScore`, `GetHopStreakMultiplier`, `Server_BankAtRisk`, `Server_LoseAtRisk`, `Server_RegisterPoolVisit` (new — not named in `06`, needed to back the "is this pool new" check), `Server_OnReachStash` (thin wrapper → `Server_BankAtRisk`, per the roadmap's Step 3 sequencing) — all on `BP_PlayerGameMode`. `BP_PoolScoringComponent.Server_ExitPool` does **not** null `CurrentPool` (spec says "clear") — it only resets `AccrualAccumulator`/`bIsScoring`; the tick gate uses `bIsScoring`, not `IsValid(CurrentPool)`, sidestepping an unresolved "how do you DSL-author a null object literal" question. Functionally equivalent; revisit only if something ever needs to read a scoring component's `CurrentPool` while `bIsScoring` is false and expects `None`.
+
 ## Known MCP buildability gaps (from the spikes — see LESSONS)
 - **Enum/struct creation: NOT possible via MCP** (`execute_tool_script` can't import `unreal`; no enum/struct tool). Use `byte`/`int` interim; create real enums/structs in-editor.
 - **"Run-on-Server / Reliable" RPC flags: unconfirmed via MCP** — gates every `Server_*` request (Step 2+). Spike before Step 2; may need in-editor.

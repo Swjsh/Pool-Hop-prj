@@ -104,6 +104,7 @@ Target: the five systems on the grey box, all state server-authoritative, judged
   4. **Stash/bank zone** `BP_StashZone` (Box trigger) at `_Project/Gameplay/`: overlap → `GameMode.Server_OnReachStash → Server_BankAtRisk`. Place in `L_Sandbox_Movement`.
   5. Per-pool build (§3.6): co-locate a swim `PhysicsVolume` (`bWaterVolume=true, priority=1`) + a `BP_PoolVolume` box + the translucent `M_WaterPlaceholder` surface. Sandbox needs 4 pools: A (open, base 10), B (fenced+sensor), C (hidden), D (money, base 18).
 - **Definition of Done:** entering a pool ticks at-risk score on the server (per-pool rate, decay after ~8s, hop-streak multiplier across distinct pools); reaching the stash banks at-risk → banked and resets streak; HUD (Step 7) shows both; compiles clean; committed.
+- **✅ DONE (new session)** — everything above except the HUD readout (that's Step 7, separate). Verified live in PIE, not just compiled: at-risk climbs on both PlayerState and GameState while occupying `Pool_A`, banking at the stash zeroes at-risk and credits banked correctly on both. Only 1 of 4 pools placed so far (B/C/D need Step 5's fence/sensor-light dressing first). See CLAUDE.md + CANON for the exact vars/functions built and a real bug (pure-node re-evaluation) caught by the live test.
 
 ---
 
