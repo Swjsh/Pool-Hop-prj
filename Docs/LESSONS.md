@@ -6,6 +6,11 @@ Running log of hard-won, non-obvious findings — bugs, tool quirks, workarounds
 
 ## 2026-06-30 — Overnight: design package + Step 1 + MCP buildability spikes
 
+### Project 42 (Gamma) process reaper does NOT target Pool Hop — verified, we're safe
+The machine also runs a large trading-automation suite at `C:\Users\jackw\Desktop\42` with many scheduled `pythonw` daemons and a `Stop-StaleClaudeProcesses` reaper (`setup/scripts/_shared.ps1`). Hunted it per the debugging discipline (find the killer before assuming safety). **It cannot kill our work:** it enumerates only `claude/node/python/uv.exe`, and kills one ONLY if its command line references Project-42's `$WorkDir` (or the `tradingview-mcp`/`alpaca-mcp` servers) AND it's older than 5 min AND not on the daemon-exempt list. Verified our Claude session's `claude.exe` cmdlines contain no `Desktop\42` reference (`Refs42=no` for all), so `$isOurs` is false → skipped. `UnrealEditor.exe` isn't a candidate process type at all, and the unreal-mcp server is embedded IN the editor (not a separate python/node proc). A scan for a broad `Get-Process|Stop-Process` / `Stop-Process -Name` / `taskkill /IM` killer returned nothing — every Gamma killer is narrowly scoped (TradingView cleanup or its own grind shards). **Loop resilience (belt-and-suspenders):** the overnight heartbeat also relaunches `UnrealEditor -ExecCmds=ModelContextProtocol.StartServer` whenever port 8000 stops listening, so even an unrelated editor death self-heals.
+
+
+
 ### MCP buildability map — what the unreal-mcp toolset CAN and CANNOT author (spiked)
 Ran probes before building Systems 2–5. Results (these bound the whole build plan):
 - **CAN build via MCP:** Blueprint classes (`BlueprintTools.create`), member variables + replication (`add_variable`/`set_variable_replication` — RepNotify auto-creates `OnRep_`), function/event graphs + DSL logic (`write_graph_dsl`/`create_node`/`connect_pins`), components (`ActorTools.add_component`), actor placement (`SceneTools`), materials (`MaterialTools`), Data Assets (`DataAssetTools.create`), Data Tables (`DataTableTools`).
@@ -16,6 +21,9 @@ Ran probes before building Systems 2–5. Results (these bound the whole build p
   - **UMG widget-tree authoring** — the `UMGToolSet` exists but adding widgets/bindings/animations to a `UserWidget` is unproven via MCP; treat Step 7 HUD as in-editor.
   - **Niagara / EQS** — unconfirmed; use material/decal + hand-authored fallbacks first.
 **Takeaway for the loop:** autonomously buildable = Step 1 (done), Step 2 Loudness logic, Step 3 Pool scoring, Step 5/6 component logic (all with regular-function interim). NOT autonomously buildable = Step 4 BT, Step 7 UMG, and RPC-flagging. Those are the "needs the user in-editor" pile.
+
+### computer-use CANNOT reach the Unreal Editor here (so no GUI fallback for the MCP-walled tasks)
+Tried `request_access` for the editor with every plausible name (`Unreal Engine`, `UnrealEditor`, `PoolHop`, `PoolHop - Unreal Editor`) — all fail: the resolver only matches Start-menu-**installed** apps, and `UnrealEditor.exe` is launched via Epic/file-association, not a Start-menu entry, so the running window is unresolvable (fuzzy-matches to Registry Editor / ROSE Online). **Consequence:** the enum/struct/BT/UMG/RPC-flag tasks that MCP can't do also can't be done via GUI automation — they genuinely need the **user** in-editor. Leave a precise in-editor checklist rather than trying to force them.
 
 ## 2026-06-30 — Session: System 1 (movement)
 
