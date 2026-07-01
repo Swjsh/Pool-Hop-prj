@@ -1,0 +1,33 @@
+# ---- Unreal Engine generated/cache folders (never commit) ----
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+.vs/
+.vscode/
+.idea/
+
+# Build products
+*.exe
+*.pdb
+*.obj
+
+# Per-user editor settings
+*.opensdf
+*.sdf
+*.sln
+*.suo
+*.VC.db
+*.VC.opendb
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Third-party asset zips/staging (not the extracted/imported content itself)
+_ThirdPartyStaging/**/*.zip
+
+# MCP-generated local client config can contain machine-specific paths — regenerate per machine
+# (uncomment if you don't want to share it across machines)
+# .mcp.json
