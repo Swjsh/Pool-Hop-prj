@@ -32,3 +32,6 @@ _ThirdPartyStaging/
 # MCP-generated local client config can contain machine-specific paths — regenerate per machine
 # (uncomment if you don't want to share it across machines)
 # .mcp.json
+
+# btsc plugin debug log (local only)
+.claude/btsc-debug.log
