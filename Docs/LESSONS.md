@@ -4,6 +4,38 @@ Running log of hard-won, non-obvious findings — bugs, tool quirks, workarounds
 
 ---
 
+## 2026-07-01 (3 PM session) — "Game runs but ignores ALL input" root cause: the IMC assets on disk had EMPTY Mappings arrays
+
+**This supersedes the "only remaining suspect is PIE keyboard focus" theory below — focus was never the problem.** Reproduced the user's bug in a cold standalone `-game` launch with REAL OS-level input (SendInput): world ticks, character idles, tilde console opens and takes typed commands (raw keyboard reaches the game fine) — but WASD/mouse/jump all dead. `showdebug enhancedinput` on screen: **"No enhanced player input action mappings have been applied to this input."**
+
+### The mechanism (fix commit `f5c714e`)
+`GetAll InputMappingContext Mappings` in the in-game console printed both IMCs **loaded but with empty `Mappings =`**. The WASD/look/jump mappings authored via MCP `set_properties` existed **only in that editor session's memory** — the on-disk `IMC_Default.uasset`/`IMC_MouseLook.uasset` serialized with zero mappings (the "save silently no-ops" corruption failure mode, one level deeper than anyone checked: everyone verified the *Blueprint graph wiring*, nobody verified the *IMC asset content on disk*). Every MCP-era PIE "verification" ran against dirty in-memory state; every cold load (the user's every Play press, and standalone) got an input system with no key bindings. Leftover `InputModifierNegate`/`SwizzleAxis` strings in the hollow uasset were stale import-table entries — **string-grepping a uasset proves references exist, NOT that arrays have elements.**
+Same disease in `BP_PlayerController`: its BeginPlay chain (AddMappingContext + the `CTRL BeginPlay - IMC_Default APPLIED` print) **never runs from a cold disk load** (no log line, no Accessed None — the saved bytecode predates the wiring). Needs recompile+resave via MCP; until then the config-level fix below covers it.
+
+### Fix 1 — restore pristine input assets by file copy (the Mannequins trick works for input too)
+`C:\Program Files\Epic Games\UE_5.8\Templates\TemplateResources\High\Input\Content\` ships `IMC_Default.uasset` (7787 B vs our hollow 6220 B), `IMC_MouseLook.uasset`, and `Actions/IA_{Move,Look,MouseLook,Jump}.uasset` at the **exact same `/Game/Input/...` package paths** the project uses — copy the files over, done. Template IMC_Default has no Crouch/Sprint mappings (ours were MCP-authored) → **re-add C→IA_Crouch, LeftShift→IA_Sprint via MCP, then verify the save actually wrote** (file size changed + relaunch + `GetAll InputMappingContext Mappings` shows them).
+
+### Fix 2 — engine-level default mapping contexts (belt-and-suspenders, now in the repo)
+`Config/DefaultInput.ini` → `[/Script/EnhancedInput.EnhancedInputDeveloperSettings]` with `+DefaultMappingContexts=(InputMappingContext="/Game/Input/IMC_Default.IMC_Default",Priority=0)` (+ MouseLook at P1). The engine applies these to every local player in `UEnhancedInputLocalPlayerSubsystem::PlayerControllerChanged` — input no longer depends on any Blueprint BeginPlay. **Config gotchas that cost a round-trip each:** the struct field is **`InputMappingContext`**, NOT `MappingContext` — a wrong field name in a config array is **silently ignored**; and a failed `LoadSynchronous` on the soft path is **silently skipped** (engine code has no else-branch). When authoring config for an engine class, grep its header first for `UCLASS(... config = X ...)` (→ which Default*X*.ini) and the exact USTRUCT field names.
+
+### The verification rule this hammers home
+**"Wiring verified in the editor" ≠ "works from disk."** PIE after in-session authoring tests memory, not the asset files. The only disk-truth test is a **fresh process**: standalone `-game`, or restart the editor before PIE. (Also killed a myth: standalone `-game` does NOT exit on focus loss — that was a blind-era misdiagnosis.)
+
+## 2026-07-01 (3 PM session) — BREAKTHROUGH: PowerShell SendInput CAN drive Enhanced Input end-to-end (no MCP, no computer-use needed)
+
+The long-standing "MCP cannot self-test a hardware keypress" wall is **broken**. What synthetic Slate keys can't do, **OS-level `SendInput` can** — it injects into the system input stream, producing real `WM_KEYDOWN`/raw-input events that Enhanced Input consumes exactly like a physical keyboard. Proven: WASD run + mouse-look camera + Space jump, all injected from a PowerShell script, all moving the character on screen. **Full recipe captured as the [`unreal-input-probe`](../.claude/skills/unreal-input-probe/SKILL.md) skill** (scripts included). Key pieces:
+- Launch `UnrealEditor.exe <proj> -game -windowed -ResX=1280 -ResY=720 -WinX=80 -WinY=80 -NoSplash`, find the window by **PID via EnumWindows** (title is `PoolHop (64-bit Development PCD3D_SM6)`; don't match by title alone — a File Explorer window named "PoolHop" collides).
+- **Focus by real click** (`SetCursorPos` + `mouse_event` at window center) — clicks focus whatever is under the cursor, bypassing Windows' `SetForegroundWindow` restrictions that blocked earlier sessions.
+- Send keys with **both VK and scancode** (`MapVirtualKey`); hold = down…sleep…up. Mouse-look = stepped `MOUSEEVENTF_MOVE` relative moves.
+- **Observe with GDI `Graphics.CopyFromScreen`** of the window rect — unlike computer-use, GDI does NOT mask unregistered windows. Screenshot before/during/after; the third-person camera makes any movement unmissable.
+- **The tilde console is drivable the same way** (it accepts these keys even though synthetic Slate keys failed): open with VK `0xC0`, type command chars as VKs, Enter. That unlocks `showdebug enhancedinput` (on-screen input-stack truth: applied contexts + live action values) and `GetAll <Class> <Prop>` (dumps ANY UObject property to the log file — e.g. `GetAll InputMappingContext Mappings` = read asset state at runtime with **no MCP connection at all**). This is a full observe/drive channel for a running game from plain PowerShell.
+
+## 2026-07-01 (3 PM session) — unreal-mcp is session-start-only: editor closed ⇒ that Claude session can never reach it
+
+Confirmed the LESSONS note operationally: this session started with the editor down → `ToolSearch` finds zero unreal tools all session, even after relaunching the editor+server. The fallback toolkit above (standalone launch + SendInput + GDI capture + console `GetAll`/`showdebug` + uasset string-grep + engine-source grep under `Engine\Plugins\...\Source`) was enough to root-cause and fix a runtime gameplay bug **without MCP**. Don't stall a session because MCP is gone — and always leave the editor running with `-ExecCmds=ModelContextProtocol.StartServer` for the NEXT session.
+
+---
+
 ## 2026-07-01 (LATE PM) — The "freeze" was never a freeze: it was a MOTIONLESS A-POSE STATUE. Game runs at 120 fps.
 
 **This supersedes the "focus throttle was the finale" framing below.** After a fresh session reconnected MCP, I measured the running game properly and the whole perf/throttle narrative collapsed: **the game renders at ~120 fps.** It was never frozen — not now, not when the user played.
