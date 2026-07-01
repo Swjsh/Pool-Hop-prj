@@ -9,8 +9,10 @@ Stylized online co-op stealth game in **Unreal Engine 5.8** (Blueprints-first, C
 ## Standing instructions (from the human — keep these satisfied every session)
 
 1. **Build reusable skills as you go.** When you work out a non-obvious way to do something (especially via the Unreal MCP), capture it as a skill under [`.claude/skills/`](.claude/skills/) so the next session doesn't rediscover it. Existing skills:
+   - [`unreal-mcp-session`](.claude/skills/unreal-mcp-session/SKILL.md) — **START HERE.** Orientation: connect to the MCP (+ the session-start-only gotcha), discover/call tools, verify against cold on-disk state, run/observe the game two ways, safety, the MCP buildability ceiling.
    - [`unreal-mcp-blueprints`](.claude/skills/unreal-mcp-blueprints/SKILL.md) — authoring Blueprint graphs/classes via MCP.
    - [`unreal-mcp-scene-building`](.claude/skills/unreal-mcp-scene-building/SKILL.md) — levels, actors, materials, screenshots, Play-In-Editor.
+   - [`unreal-input-probe`](.claude/skills/unreal-input-probe/SKILL.md) — self-test real keyboard/mouse input + drive the in-game console via PowerShell SendInput (no MCP needed); the only honest test of hardware-path input.
 2. **Keep a lessons log.** Append hard-won, non-obvious findings to [`Docs/LESSONS.md`](Docs/LESSONS.md) as you hit them — bugs, gotchas, tool quirks, what worked. One entry per lesson, newest first.
 3. **Keep this CLAUDE.md current.** Update "Current state" below as build phases complete. Track new standing requests here.
 4. **Commit + push after each meaningful chunk** (Epic's own MCP safety rule). Never `--dangerously-skip-permissions` while the Unreal MCP plugin is loaded. `execute_tool_script` runs arbitrary Python — treat as privileged, review diffs.
@@ -50,7 +52,7 @@ Stylized online co-op stealth game in **Unreal Engine 5.8** (Blueprints-first, C
 
 **Rendering:** hardware ray tracing is **disabled** (`r.RayTracing=False` in DefaultEngine.ini) — the template's Lumen HWRT deadlocked PIE at render init. Lumen runs in software. Revisit for real neighborhoods (Phase 4+). `EditorStartupMap`/`GameDefaultMap` → `L_Sandbox_Movement`.
 
-**Overnight autonomous run (in progress):** a multi-agent workflow is writing an exhaustive design + build-spec package to `Docs/design/` (art/style, Maple Court neighborhood, underground pools, the AI watcher, characters, core-systems tech spec, movement/UI, a design bible `00`, an implementation roadmap `08`, and a critique `09`). A build loop then works the roadmap (Loudness → Scoring → shared state → AI Watcher → couple → costume → neighborhood → underground pools), committing per chunk. **Start here on next wake:** read `Docs/design/08_Implementation_Roadmap.md`, check `git log`, then build the next undone chunk.
+**Overnight autonomous run (in progress):** a multi-agent workflow is writing an exhaustive design + build-spec package to `Docs/design/` (art/style, Maple Court neighborhood, underground pools, the AI watcher, characters, core-systems tech spec, movement/UI, a design bible `00`, an implementation roadmap `08`, and a critique `09`). A build loop then works the roadmap (Loudness → Scoring → shared state → AI Watcher → couple → costume → neighborhood → underground pools), committing per chunk. **Start here on next wake:** read [`Docs/design/START_HERE.md`](Docs/design/START_HERE.md) (the session handoff — current state, prime directives, next actions), then `CANON.md` + `08_Implementation_Roadmap.md`, check `git log`, then build the next undone chunk. New/other model: also read the [`unreal-mcp-session`](.claude/skills/unreal-mcp-session/SKILL.md) skill first.
 
 **Restart the editor + MCP (if the server is down / port 8000 not listening):**
 ```powershell

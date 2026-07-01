@@ -4,6 +4,8 @@
 
 > This is the **priority deliverable**. It fully specs the single patrolling Homeowner/Watcher NPC for the Systems Sandbox (Docs/02 System 4), the first threat in build order after Loudness → Scoring. It is written to be built directly by an engineer driving the editor via the `unreal-mcp` plugin: every asset has a path, parent class, and concrete tuning numbers, and §12 sequences it into buildable MCP steps.
 
+> ⚠️ **CANON OVERRIDE ([CANON.md](CANON.md) wins).** Two things in this doc are stale: (1) `E_AlertState` here shows **3** members — it has **4** (`Unaware, Suspicious, Alert, Critical`). (2) The AI-numbers here (35°/1400/1800 cone, hearing **1200**, fill 1.5s/decay 3.0s) are correct — but where a BT service mirrors to the player, the canonical PlayerState field is **`DetectionAlpha`** and the alert enum is **`AlertLevel`** (see CANON §"Verified drift resolutions"). Build to CANON.
+
 ---
 
 ## 0. Where this sits in the build

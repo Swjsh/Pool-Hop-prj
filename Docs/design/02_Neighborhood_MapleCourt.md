@@ -7,6 +7,8 @@
 >
 > **What this doc is NOT.** Not final art, not a Synty dressing pass, not new gameplay systems. It reuses the exact systems from `Docs/02_MVP_Vertical_Slice.md` (movement, loudness, scoring, one detection AI, sensor light, stash zone) — Maple Court is where those proven systems get their first *authored* space instead of the abstract sandbox. Per build order (`Docs/02` §5) this map is a **Phase 4** deliverable; the placement plan here is forward-looking as the human requested, but the *systems* it depends on must be built in order (Loudness → Scoring → Detection AI → couple → costume) first.
 
+> ⚠️ **CANON OVERRIDE ([CANON.md](CANON.md) wins).** The "Detection tuning" block in §3 hardcodes `PeripheralVisionHalfAngle=45°`, `LoseSightRadius=1700`, `Hearing=900`, fill `1.2s`/cool `2.0s` and says "do not re-tune" — **all wrong, ignore it.** Canonical cone = `35° / SightRadius 1400 / LoseSight 1800`, hearing `1200`, fill `1.5s` / decay `3.0s` (from `04`). The watcher actor is `BP_WatcherCharacter` (NOT `BP_HomeownerCharacter`). Cone geometry is fixed across all maps; author difficulty via route/dwell/light density.
+
 ---
 
 ## 0. Grounding & hard constraints (do not violate)

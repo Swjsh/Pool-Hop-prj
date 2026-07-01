@@ -4,7 +4,7 @@
 
 > **What this doc is.** The concrete, ordered, MCP-driven build plan that turns the design package (`00_Design_Bible.md` + domain docs `01`–`07` + source `Docs/00`–`07`) into editor work. It respects the locked build order (`Docs/02` §5) and the server-authority discipline (`Docs/03` §2). Each **step** lists: prerequisites, the governing design doc(s), concrete `unreal-mcp` actions, and a **Definition of Done (DoD)**. The MVP phase (Steps 0–8) is the work queue; Phases 9–12 are specified-but-parked forward work in dependency order.
 >
-> **How to drive it.** Do one step at a time, in order. Commit before starting each step and after finishing it (Epic MCP safety rule, `CLAUDE.md`). After any asset batch: `save_assets([])` → `find Content -name "*.uasset" -size 0` → compile every touched Blueprint with `compile_blueprint(warnings_as_errors=true)` before trusting it (`Docs/LESSONS.md`: silent 0-byte saves + a non-compiling BP freezes PIE on a modal MCP can't dismiss). Use the `unreal-mcp-blueprints` and `unreal-mcp-scene-building` skills; call `get_graph_dsl_docs` before your first `write_graph_dsl`.
+> **How to drive it.** New agent: start from [`START_HERE.md`](START_HERE.md) then [`CANON.md`](CANON.md) — **build to CANON names/numbers, not the domain docs** (they drifted; `04`/`07`/`02` carry ⚠️ banners). Do one step at a time, in order. Commit before starting each step and after finishing it (Epic MCP safety rule, `CLAUDE.md`). After any asset batch: `save_assets([])` → `find Content -name "*.uasset" -size 0` → compile every touched Blueprint with `compile_blueprint(warnings_as_errors=true)` — and for anything load-bearing, verify in a **cold process** (restart editor / standalone launch), because in-editor saves can serialize empty (`Docs/LESSONS.md`: silent 0-byte + empty-array saves, and a non-compiling BP freezes PIE on a modal MCP can't dismiss). Read the [`unreal-mcp-session`](../../.claude/skills/unreal-mcp-session/SKILL.md) skill first, then `unreal-mcp-blueprints` / `unreal-mcp-scene-building` / `unreal-input-probe`; call `get_graph_dsl_docs` before your first `write_graph_dsl`.
 
 ---
 
@@ -58,7 +58,7 @@ Target: the five systems on the grey box, all state server-authoritative, judged
   2. `compile_blueprint(warnings_as_errors=true)` on `BP_PlayerCharacter` and every Core BP — a leftover non-compiling template BP freezes PIE (LESSONS).
   3. `save_assets([])` → `find Content -name "*.uasset" -size 0` (catch the 0-byte corruption class).
   4. `StartPIE`; confirm every verb; if wedged, tail `Saved/Logs/*.log` by file read (not MCP) to diagnose.
-- **Definition of Done:** PIE loads clean (no compile modal), pawn spawns on flat ground, all verbs work (walk/crouch/sprint/jump/vault/enter+exit pool/swim), no 0-byte assets, committed. Human confirms feel (MCP can't inject input).
+- **Definition of Done:** PIE loads clean (no compile modal), pawn spawns on flat ground, all verbs work (walk/crouch/sprint/jump/vault/enter+exit pool/swim), no 0-byte assets, committed. **Input is now self-verifiable** via the [`unreal-input-probe`](../../.claude/skills/unreal-input-probe/SKILL.md) skill (real OS keystrokes on a standalone launch) — verify WASD/jump/mouse-look yourself; still get the human for final *feel* (is the movement satisfying). **Status 2026-07-01: movement VERIFIED end-to-end; only Crouch(`C`)/Sprint(`LeftShift`) IMC mappings remain (see START_HERE §2).**
 
 ---
 

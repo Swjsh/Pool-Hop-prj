@@ -9,6 +9,8 @@ This document specifies two deliverables, both build-ready for an engineer drivi
 
 It is grounded in `Docs/07_Movement_Physics_UI_Research.md` (feel/UI research), `Docs/01_Game_Design_Document.md` §5 (mechanics), `Docs/02_MVP_Vertical_Slice.md` (scope/build order), `Docs/03_Technical_Architecture.md` §2 (server authority), and `Docs/LESSONS.md` (MCP gotchas).
 
+> ⚠️ **CANON OVERRIDE ([CANON.md](CANON.md) wins) — this doc's HUD binds to variable names that DO NOT EXIST after Step 1.** `ScoreBanked`→`TeamScoreBanked`, `ScoreAtRisk`→`TeamScoreAtRisk`/`IndividualScoreAtRisk`, `NeighborhoodAlert`→`AlertLevel`, `NightSecondsRemaining`→`NightTimeRemaining`, `Heat`→`NeighborhoodHeat`, `Loudness`→`CurrentLoudness`. Bind to the **canonical** names (CANON §"Verified drift resolutions" has the full table) or every HUD element silently reads 0.
+
 ---
 
 ## 0. Ground Rules (do not violate)

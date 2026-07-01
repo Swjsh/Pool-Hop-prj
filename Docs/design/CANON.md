@@ -27,6 +27,32 @@ The 10 design docs were authored in parallel and drifted: the same state variabl
 - **Pools use absolute `BaseScorePerSecond`** (the real field on `BP_PoolVolume`), NOT multipliers: sandbox A/B/C/D = `10 / 13 / 15 / 20` per second.
 - **Detain respawn target = the stash-zone actor** (`BP_StashZone`, exists by Step 3), everywhere.
 
+## Verified drift resolutions (2026-07-01 audit — a fresh model MUST build from these, not the domain docs)
+
+A doc audit confirmed the parallel-authored docs `04`/`07`/`02` still contain **old names and numbers that silently break bindings**. These are the rulings; the offending docs carry a banner pointing here.
+
+**1. HUD / framework-state variable names — `07` is WRONG, build the names in the Step-1 tables below.** `07_Movement_And_UI.md` binds the HUD to short names that DO NOT EXIST after Step 1. Use this translation:
+
+| `07` says (WRONG) | Actual canonical var (build + bind THIS) | Lives on |
+|---|---|---|
+| `ScoreBanked` | `TeamScoreBanked` | GameState |
+| `ScoreAtRisk` | `TeamScoreAtRisk` (shared) / `IndividualScoreAtRisk` (per-player) | GameState / PlayerState |
+| `NeighborhoodAlert` | `AlertLevel` | GameState |
+| `NightSecondsRemaining` | `NightTimeRemaining` | GameState |
+| `Heat` | `NeighborhoodHeat` | GameState |
+| `Loudness` | `CurrentLoudness` | PlayerState |
+| `DetectionAlpha` | `DetectionAlpha` ✓ (this one matches) | PlayerState |
+
+`04_AI_Watcher.md` writes detection to PlayerState: the canonical field is **`DetectionAlpha`** (0–1 fill). If `04` also names `DetectionMeter`/`SeenByAlertState`, treat those as the same `DetectionAlpha` + `AlertLevel` unless you deliberately add a separate raw-meter var.
+
+**2. `E_AlertState` has FOUR members: `Unaware(0), Suspicious(1), Alert(2), Critical(3)`.** `04 §6/§11` and its pseudocode show only 3 (omit `Critical`) — **stale**. `Critical` is real (AlertDirector assigns it at heat ≥ 90, `06 §5.4`). Build 4.
+
+**3. Hearing range = `1200` (both fields, one number).** `04` says `HearingRange = 1200`; `06 §2.2/§2.5` says `HearingRangeAtMaxLoudness = 2500` — **conflict**. Ruling: use **1200** everywhere (the AI sense `HearingRange` AND the LoudnessComponent's `HearingRangeAtMaxLoudness` both = `1200`). It's one tuned pair; `06`'s 2500 is superseded. (Playtest may move it — but move both together.)
+
+**4. Watcher cone geometry = `35° / 1400 / 1800`, fill `1.5s` / decay `3.0s`.** `02 §"Detection tuning"` hardcodes `45° / 1700 / 900 / 1.2s / 2.0s` and even says "do not re-tune per map" — **all wrong, ignore that whole block**. `04` (which CANON already blesses for AI numbers) is right. Difficulty per map = route/dwell/light, never cone size.
+
+**5. Watcher actor name = `BP_WatcherCharacter` + `BP_WatcherController` under `Content/_Project/AI/Watcher/`.** `05`/`02`/`03` variously call it `BP_Watcher`/`BP_Homeowner`/`BP_HomeownerCharacter` — all wrong, use the `04` name everywhere.
+
 ## Canonical Step-1 variable tables (what the build creates)
 Replication legend: `None` = server-only/local; `Rep` = Replicated (read-only mirror on clients); `RepNotify` = replicate + `OnRep_`.
 
