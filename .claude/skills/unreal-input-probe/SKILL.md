@@ -21,8 +21,9 @@ Together: a full drive-and-observe loop for a running game from plain PowerShell
 ## The high-value console commands
 
 - `showdebug enhancedinput` — on-screen truth: possessing controller/pawn classes, input mode, **applied mapping contexts and live action values**. The message *"No enhanced player input action mappings have been applied to this input"* = the rebuilt mapping set is empty (no contexts applied **or contexts with empty Mappings arrays**).
-- `GetAll <Class> <Property>` — dumps any UObject property of all instances **to the log file**: `GetAll InputMappingContext Mappings` reads the actual runtime asset state (this is what exposed the hollow IMCs), `GetAll EnhancedInputDeveloperSettings DefaultMappingContexts` shows whether config parsed.
+- `GetAll <Class> <Property>` — dumps any UObject property of all instances **to the log file**. **Use `GetAll InputMappingContext DefaultKeyMappings`, NOT `...Mappings`** — in this engine version `UInputMappingContext.Mappings` is a legacy/always-empty shim; the real bindings live nested at `DefaultKeyMappings.Mappings` (added for the player-remappable-key-profile system). `GetAll ... Mappings` prints `Mappings =` (empty) even on a fully healthy IMC — a false "hollow" signal. `GetAll EnhancedInputDeveloperSettings DefaultMappingContexts` shows whether config parsed.
 - `obj list class=<Class>` — instance census to the log.
+- **Multiple concurrent UE processes redirect the log file**: if the editor already holds `Saved/Logs/<Project>.log` open, a standalone `-game` instance's log silently goes to `<Project>_2.log` (then `_3`, etc. for further instances). Check `ls -la Saved/Logs/` for the newest one before grepping — grepping the primary log after launching a second instance finds nothing.
 
 ## Verification doctrine
 
