@@ -1,0 +1,85 @@
+# Pool Hop — Virality & Market Research
+
+*Compiled July 2026 from four parallel research passes on the 2025-2026 indie co-op market. All claims sourced; see per-section source lists. This doc answers: what's actually breaking out right now, why, and what Pool Hop should specifically do about it.*
+
+---
+
+## Bottom Line Up Front
+
+Pool Hop's existing design is already pointed at the thing that's working. The genre it's competing in now has a name — **"friendslop"** — and Pool Hop's core loop (shared alert state, one loud friend endangers everyone, emergent chaos, low-fidelity-on-purpose readability, cosmetic-only costumes) matches the winning formula almost exactly without needing a redesign. The changes worth making are about **emphasis and sequencing**, not new mechanics: make the AI-chase moments louder and funnier sooner, get a Discord/clip pipeline running during the grey-box phase instead of waiting for real art, and land on a premium (not free, not F2P) price in the $9.99–$14.99 band at Early Access.
+
+---
+
+## A. What's Actually Breaking Out (2025-2026)
+
+**"Friendslop" is now a named, recognized genre** (Wikipedia and multiple trade outlets), defined by: low barrier to entry, minimal/low-fidelity graphics, social interaction prioritized over gameplay depth, proximity/voice chat, physics-based chaos, and price typically under $20. This is Pool Hop's genre, by definition, whether or not we use the word in marketing.
+
+Case studies, with numbers:
+
+- **PEAK** (Aggro Crab + Landfall, June 2025) — launched at $3.99, went from ~11,000 to 102,799 concurrent players in five days, peaked at 114,492 (an all-time Steam co-op record at the time), sold 1M+ copies in 6 days and 5M+ by year's end. Built in a 4-week game jam. Devs have said design and content marketing were "the same activity" — every clip-worthy moment in the game was designed as one.
+- **R.E.P.O.** (Semiwork, Feb 2025) — launched at $9.99 with zero marketing budget, discovered organically by streamers, peaked at 230,000–271,000 concurrent players within its first month, became the #1 highest-grossing paid Steam title that week. Credited formula: Lethal Company's scavenge-and-extract loop + Content Warning's absurd physics-driven monster comedy + proximity voice chat.
+- **Content Warning** (Landfall, April 2024) — launched free, 6.2M downloads in 24 hours, 204,000 peak concurrents. Its win condition is *literally* filming a shareable clip to hit a view-count quota — the game about going viral went viral by design.
+- **Meccha Chameleon** (solo Japanese dev, June 2026) — 3M copies sold in 7 days, #1 on Steam's global chart above Forza Horizon 6 and Destiny 2, zero marketing spend. Viral driver: instantly readable, embarrassing failure states (visibly failing to camouflage) that generate clips with no editing effort, plus a "viewer-participation" mode letting a streamer's Twitch chat join the lobby directly. Priced at $5.99 — cited repeatedly as removing "per-player" friction for a friend group deciding to buy in together.
+- **P.O.N.** (two-person team, targeting Q1 2026) — the closest direct genre analog found. First-person co-op stealth-heist game where up to 4 players are hunted by a single unpredictable AI predator. Generated major pre-launch buzz purely from gameplay clips of the AI antagonist's behavior — no other marketing. **Directly relevant**: Pool Hop's homeowner/chaser/cop AI is the same kind of asset — an unpredictable antagonist whose behavior alone can carry marketing, if it reads well on camera.
+
+**Analyst consensus across sources**: "co-op + something with teeth (horror, survival, an AI hunter) is the most consistent path to indie breakout success," and playing with friends has displaced paid user-acquisition marketing entirely for small teams — the biggest 2025-2026 hits spent $0–low budget on ads.
+
+*Sources: [Wikipedia — Friendslop](https://en.wikipedia.org/wiki/Friendslop), [Creative Bloq](https://www.creativebloq.com/3d/video-game-design/what-is-friendslop-and-why-it-it-taking-over-gaming-in-2026), [Screen Rant — PEAK record](https://screenrant.com/peak-steam-player-count-record-aggro-crab/), [Game Developer — Aggro Crab on friendslop](https://www.gamedeveloper.com/business/peak-co-developer-aggro-crab-shares-lessons-in-friendslop), [Wikipedia — R.E.P.O.](https://en.wikipedia.org/wiki/R.E.P.O.), [PC Gamer — R.E.P.O. combines two viral formulas](https://www.pcgamer.com/games/horror/r-e-p-o-is-my-new-favourite-co-op-horror-game-which-combines-lethal-companys-looting-loop-with-content-warnings-zany-monsters/), [Wikipedia — Content Warning](https://en.wikipedia.org/wiki/Content_Warning), [Automaton West — Meccha Chameleon](https://automaton-media.com/en/news/japanese-viral-indie-hit-meccha-chameleon-sells-3-million-copies-in-a-week-as-creators-reveal-they-spent-nothing-on-advertising/), [AltChar — P.O.N.](https://www.altchar.com/game-news/p.o.n.-is-indie-horror-game-going-viral-for-its-terrifying-batman-predator-aaX5O7w5R53A), [DigitalCitizen](https://www.digitalcitizen.life/steam-co-op-indie-game-breakout-hit/).*
+
+---
+
+## B. Monetization: What Works, What Backfires
+
+- **Premium (one-time purchase) is the dominant, best-performing model for small teams right now** — highest trust, no hidden-cost friction, best word-of-mouth efficiency (no "I'd have to spend more" hesitation for a friend group buying in together).
+- **F2P + cosmetics is high-risk for a solo/small team specifically.** It needs live-ops infrastructure and typically $50K–100K+ in acquisition spend to work — resources we don't have and don't need given the organic-growth pattern above.
+- **The winning hybrid**: premium base game + optional cosmetic DLC/seasonal drops added *after* launch, never pay-to-win. This is **exactly Pool Hop's existing plan** (GDD §5.6: costumes "90% flex, 10% function," §9: cosmetic unlocks) — validated, not something to change. One caution from the research: don't drip-feed cosmetic DLC too early, it "cheapens the perception of the base game."
+- **Price point**: cheap, near-impulse pricing correlates with the biggest 2025 breakouts — R.E.P.O. $9.99, PEAK $3.99, Content Warning free-then-$7.99 — all well under typical "premium indie" $20–30 pricing. The broader indie EA band for stylized, non-photoreal co-op titles is $10–20, but the *viral* co-op tier specifically clusters lower. **Recommendation: launch Early Access in the $9.99–$14.99 range**, not free (removes the marketing hook of an obvious price/value story) and not $20+ (adds friction for a 4-8 person friend group all buying in).
+- **Cautionary tale**: Starlight ReVolver, a co-op game backed by $17.5M in VC funding tied to an AI/UGC platform agenda, crashed to 499 concurrent players at EA launch after community suspicion the game was a "proof-of-concept" rather than a real product. The lesson isn't about pricing — it's that **chasing hype/funding narratives over substance is what backfires**, not premium pricing itself.
+- **Platform-level irreversibility note**: Steam doesn't allow reverting a paid game to free-then-back — Pico Park's solo dev discovered this the hard way. Any free-pricing experiment (e.g. a free demo/prologue) should be a *separate* app, never the main paid title.
+
+*Sources: [dev.to — Indie Monetization 2026](https://dev.to/linou518/indie-game-monetization-in-2026-premium-dlc-or-subscription-which-path-is-right-for-you-955), [StraySpark](https://www.strayspark.studio/blog/indie-game-monetization-2026-pricing-strategy), [Sunstrike Studios](https://sunstrikestudios.com/en/blog/game_monetization_strategies/), [Datahumble — Steam Pricing 2026](https://datahumble.com/blog/steam-game-pricing-strategy), [mein-mmo.de — Starlight ReVolver](https://mein-mmo.de/en/co-op-game-raises-17-million-from-investors-crashes-spectacularly-on-steam,1570599/), [PC Gamer — Pico Park accidentally free](https://www.pcgamer.com/games/action/i-can-never-go-back-to-paid-one-of-the-best-co-op-indie-platformers-is-free-to-play-after-its-developer-accidentally-switched-off-the-price/), [Indie Launch Lab — 2025 Steam Releases](https://indielaunchlab.com/analytics/steam-reports/2025).*
+
+---
+
+## C. What Makes a Design "Clip-Worthy"
+
+- **Physics-based chaos and failure states are the single most-cited driver.** R.E.P.O.'s ragdoll physics are directly credited for making failure "silly" and shareable. Pool Hop's equivalents: a bad dive into a pool, tripping over patio furniture mid-sprint, a chaser tackle — these should ragdoll/physics-comedy rather than play a clean fail animation.
+- **Sound is the hook.** TikTok/Shorts are sound-first; if a clip is silent or boring in the first 2 seconds it doesn't spread. Pool Hop already has loud, discrete audio events built into the design (motion-sensor floodlight snap, dog bark, alarm, siren) — these are the natural "2-second hooks" and should be mixed/timed with that specifically in mind, not just as gameplay feedback.
+- **The "confidence vs. reality" gap drives comedy.** Named explicitly for Lethal Company/R.E.P.O.: the gap between how confidently a team enters a situation and how badly it actually goes. Pool Hop's loudness meter + AI detection is structurally the same system — this is direct validation that the core loop (not a new feature) is the virality engine, as long as failure is visible, fast, and funny rather than punishing and slow.
+- **Photo/replay mode needs an in-fiction payoff or it gets ignored.** Best-practice photo modes (per Game Developer's coverage of indie approaches) are only used when tied to a reward or quest, not offered as a bare feature. Content Warning went further and made *capturing a clip* the actual win condition. **Recommendation**: don't build a generic photo mode as originally scoped (GDD §9, low priority) — instead prioritize a lightweight built-in highlight/clip capture (last-30-seconds replay, one button, auto-saves your best "close call" or "caught" moment) as a Phase 1/2 feature, not a Phase 6 polish item. This is cheap relative to a full photo mode and matches what's actually driving shares.
+- **Streamer co-op support is a structural advantage Pool Hop already has.** Twitch added co-streaming discovery features (Oct 2025) that reward games where multiple people are streaming the same session together — a 2-8 player game is well-positioned for this by default. No design change needed, just something to point at in a Steam page/trailer ("built for co-streaming").
+
+*Sources: [Eklipse.gg — Viral Gaming Clips](https://blog.eklipse.gg/guide/how-to-make-viral-gaming-videos.html), [Newsweek — R.E.P.O. explained](https://www.newsweek.com/entertainment/video-games/what-repo-viral-horror-video-game-explained-2046020), [Switchblade Gaming](https://www.switchbladegaming.com/co-op-games/like-lethal-company/), [PC Gamer — Content Warning 204K concurrent](https://www.pcgamer.com/games/horror/april-fools-phenom-content-warning-draws-in-more-than-204000-concurrent-players/), [Twitch Blog — Co-Streaming](https://blog.twitch.tv/en/2025/10/14/co-streaming-on-twitch/), [Game Developer — photography mechanics](https://www.gamedeveloper.com/design/how-some-indies-are-approaching-photography-mechanics-in-their-games), [Viryze — TikTok Gaming Trends 2026](https://viryze.com/blog/tiktok-gaming-trends-2026).*
+
+---
+
+## D. Launch & Platform Strategy
+
+- **Steam Next Fest is still valuable but increasingly diluted** — June 2026's edition had 4,200+ demos, the largest ever. Top-tier games still gain real wishlists (~350 followers/~7,000 wishlists for the top 5%), but the median game gets almost nothing (~11 followers), and under 10% of Next Fest wishlists convert to purchases a month post-launch. **Pre-event promotion matters more than the event itself now** — don't treat a Next Fest slot as a growth strategy on its own; treat it as a deadline to have already-built momentum pay off against.
+- **Early Access is the standard, correct model for a co-op game like this** — not a straight-to-1.0 launch. Recent comps (Windrose, Far Far West, Slay the Spire 2) all used EA for iterative, community-driven development, several specifically timing new co-op features to the EA period.
+- **Steam Playtest is built for exactly the Phase 2 netcode milestone** in the Technical Architecture doc. It runs on a separate appID (doesn't touch real wishlists or reviews), lets you fully control signup/rollout, and explicitly supports scheduled multiplayer stress-test windows — this is the right tool the moment 2-player listen-server co-op is working, before scaling to 8.
+- **itch.io + Discord first, Steam page in parallel, for community-building before any paid launch.** The recommended pattern for first-time devs: itch.io (free, 90/10 split, low-barrier community) to get the grey-box sandbox in front of real players early and gather feedback, Discord as the actual retention/feedback infrastructure (a few hundred engaged members reportedly outweigh tens of thousands of passive followers), Steam page live early to start collecting wishlists even before Next Fest. Recommended runway: **12-18 months of community-building before a paid Early Access launch** — which, starting today, lines up naturally with Pool Hop's own phased roadmap (Phase 1 sandbox → Phase 2-3 co-op → Phase 4 first real neighborhood as the natural EA launch point).
+- **Solo/small-dev-specific warning**: co-op multiplayer is disproportionately expensive for a small team to build — exactly why the Tech Architecture doc's "server-authoritative from line one, single-player-first" discipline matters as much for schedule risk as for virality. Scope discipline (the MVP doc's explicit "Won't" list) is repeatedly cited as the difference between solo projects that ship and ones that don't.
+
+*Sources: [Tech Insider — Next Fest June 2026](https://tech-insider.org/steam-next-fest-june-2026/), [Alinea Analytics — Next Fest wishlist data](https://alineaanalytics.substack.com/p/steam-next-fests-wishlist-winners), [GameBrief — indie co-op EA comps](https://www.gamebrief.net/blog/best-indie-co-op-games-steam-summer-sale-2026), [Steamworks — Playtest docs](https://partner.steamgames.com/doc/features/playtest), [Fungies.io — Steam vs itch.io](https://fungies.io/steam-vs-itch-io-indie-developers/), [gtstu.com — community building before launch](https://gtstu.com/2026/06/19/indie-game-community-building-before-launch/), [Game Developer — multiplayer as an indie](https://www.gamedeveloper.com/design/the-ups-and-downs-of-doing-online-multiplayer-as-an-indie).*
+
+---
+
+## E. Concrete Recommendations for Pool Hop
+
+Ranked by how cheap they are to act on now vs. later:
+
+1. **Start a Discord today, during Phase 0/1** — not at Phase 4. Post grey-box sandbox clips as they happen, even ugly ones; per the research, this is where real community forms, and it costs nothing.
+2. **Design failure/detection moments for ragdoll comedy, not clean fail-states**, from the very first System 4 (Detection AI) implementation — a homeowner tackle or a bad pool dive should be physically silly, not a scripted respawn. This is a Phase 1 build decision, not a later polish pass.
+3. **Mix the sensor-light snap, dog bark, and alarm as sound-forward "2-second hooks"** — deliberately, not just as gameplay feedback — since these are the exact moments a clip would start.
+4. **Replace the low-priority "photo mode" idea (GDD §9) with a cheap built-in clip/highlight capture** (auto-save last 30 seconds on a "caught" or "clean escape" event) — pull this earlier in the roadmap, it's doing more marketing work per dev-hour than almost anything else on the list.
+5. **Keep leaning into the shared-alert/"one loud friend" mechanic (GDD §6) as hard as possible** — it's already exactly the mechanic credited for Lethal Company/PEAK/R.E.P.O.'s social virality. Don't soften it for accessibility; it's the point.
+6. **Treat the homeowner/chaser/cop AI's personality and readability as a first-class asset**, the way P.O.N.'s predator AI is — since an antagonist that's fun to watch on its own can carry marketing before the game is otherwise ready to show.
+7. **Stand up a Steam Playtest appID at the Phase 2 netcode milestone**, not after — use it as the multiplayer stress test the docs already call for, and it's free community-building at the same time.
+8. **Target Early Access pricing of $9.99–$14.99**, premium one-time purchase, costumes as post-launch cosmetic DLC exactly as already planned — no F2P, no pay-to-win, don't drip-feed cosmetics too early.
+9. **Don't chase a Next Fest slot until there's a genuinely polished demo** (likely around Phase 4, first real neighborhood) — pre-built momentum matters more than the event slot itself now.
+10. **If a free taste is ever offered, make it a separate app/demo**, never a price change on the main game — Steam won't let that reverse.
+
+---
+
+*All figures current as of research date (July 2026); concurrent-player and sales numbers shift — verify on live sources (SteamDB/Steam Charts) before using in any external pitch materials.*
