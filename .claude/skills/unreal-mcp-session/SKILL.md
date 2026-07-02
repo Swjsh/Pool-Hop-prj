@@ -9,14 +9,18 @@ This is the map. The territory is in three domain skills: **[unreal-mcp-blueprin
 
 ---
 
-## 1. Connecting — the one gotcha that wastes whole sessions
+## 1. Connecting — the reconnect story is more nuanced than earlier sessions assumed
 
-**The unreal-mcp server attaches to Claude Code ONCE, at Claude-session start.** There is **no in-session reconnect**. Consequences:
+**CORRECTED 2026-07-02 (see `Docs/LESSONS.md` for the full empirical trail): in-session reconnect DOES work, at least in this specific proven scenario.** The long-standing "no in-session reconnect, must restart Claude Code" claim below was the established doctrine for most of this project's history and drove real caution (e.g. the MegaLights/Lumen re-test being deferred specifically to avoid this risk) — but it was **empirically falsified** this session: the editor was closed (clean shutdown), stayed down for several cycles (confirmed via `Test-NetConnection`/process checks — `unreal-mcp` calls failed with a connection error the whole time), then got restarted externally: once WITHOUT the MCP flag (port 8000 stayed down, tool calls kept failing), then again WITH it. The moment port 8000 came back up (caught via a persistent `Monitor` polling it), **the SAME already-running Claude session's very next `unreal-mcp` tool call succeeded immediately** — no Claude Code restart needed. Verified stable with a second, independent call right after (not a fluke).
 
-- The editor must **already be running with the MCP server started** *before* you launch Claude. If it wasn't, `ToolSearch` for unreal tools returns **nothing for the entire session** — and relaunching the editor mid-session does **not** help.
-- If you find yourself with no unreal tools: (1) make sure the editor is up with the server (command below), (2) confirm port 8000 is listening, then (3) **restart Claude Code** — the fresh session hooks into the running server. Project state survives via git + the `CLAUDE.md` handoff note, so this is cheap.
+**Best current understanding of the mechanism:** the transport is plain HTTP (`http://127.0.0.1:8000/mcp`, see below) — each tool call is plausibly a fresh, stateless HTTP request rather than a persistent handshake/session your Claude process holds open. If that's right, reconnection succeeding is less "special recovery magic" and more "there was simply nothing listening on the port before, and now there is" — which would mean the original claim may have been over-generalized from a different, earlier failure mode (or was accurate for a different transport at the time it was written) rather than a fundamental limit of this specific setup.
 
-**Server facts (not documented in the domain skills — anchor them here):**
+**What to actually do now, given the uncertainty:**
+- The old advice ("if you find yourself with no unreal tools, make sure the editor+server are up, then restart Claude Code") is **no longer the ONLY path** — trying a real tool call first (not just `ToolSearch`, which can return cached schemas without proving connectivity) is now the right first move once the server's back, since it might just work.
+- **Still don't treat this as a green light to casually restart the editor mid-session** (e.g., to test the MegaLights/Lumen change) purely because reconnection worked once for an *externally-triggered* restart. That specific scenario (an already-connected session deliberately triggering its own server's shutdown+relaunch, e.g. via `StopPIE`-adjacent process control) has not been tested — only "the server died and came back while I was idle, unrelated to my own actions" has. Re-verify with a fresh, deliberate test before fully retiring that caution.
+- If a real tool call fails with a connection error, the old fallback (restart Claude Code once the editor+server are confirmed up) is still the safe, always-works path.
+
+**Server facts (still accurate, not documented in the domain skills — anchor them here):**
 - Transport: HTTP MCP on **`http://127.0.0.1:8000/mcp`** (port **8000**). No auth — localhost is not a trust boundary; never expose the port.
 - The editor does **not** auto-start the server. The `-ExecCmds` arg does. **Start editor + server:**
   ```powershell
