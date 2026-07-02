@@ -92,4 +92,16 @@ When a graph already has content you must not clobber (e.g. the duplicated chara
 1. `compile_blueprint(bp, warnings_as_errors=true)` — catches dangling refs / missing pins.
 2. `AssetTools.save_assets([])` then verify on disk (`ls -la`, `find ... -size 0`) — some saves silently no-op (see LESSONS).
 3. **For any logic with multiple reads/writes of the same state (score math, resets, accumulators), verify with a live PIE run reading actual property values** (`StartPIE` → `ActorTools.set_actor_transform` to place the pawn where needed → `ObjectTools.get_properties` on the real PlayerState/GameState instances) — a clean compile and a correct-looking `get_node_infos` dump can BOTH be true while the runtime numbers are wrong (see the pure-node re-evaluation gotcha above).
+
+## Diagnostic technique: isolate "does X work at all" from "is X being invoked correctly"
+
+When a Blueprint's decision logic reads correctly (`read_graph_dsl`/`get_node_infos` both look right) but the expected effect still doesn't happen, don't keep re-reading the logic — build a minimal, fully-DISCONNECTED test instead:
+1. `add_event(bp, "TestName")` — a new custom event with zero wiring to any existing exec chain (safe by construction, nothing to break).
+2. Wire ONLY the suspect operation into it (e.g., a single `AI|Navigation|MoveToLocation` call) with hardcoded, known-good inputs — bypass every upstream decision entirely.
+3. If the operation has a return value, capture it into a temporary variable (`add_variable` → compile → wire a `Set` node off the return pin) so you can read the outcome afterward via `ObjectTools.get_properties`.
+4. Trigger the test event via `Utilities|Time|SetTimerbyFunctionName` (string function-name arg) appended to any conveniently-**dangling** exec pin on an existing event (check via `get_node_infos` that its output has `connected_pins: []` first — appending there needs no `break_pins`, so it's zero-risk to existing logic). Don't wire directly into a load-bearing chain's middle for a throwaway test.
+5. Run PIE, wait, read the captured result. A concrete return code (e.g., `EPathFollowingRequestResult::Failed`) is far more decisive than another round of static graph reading.
+6. **Clean up completely afterward**: `delete_node` every temporary node, `remove_variable` the temporary variable, then `read_graph_dsl` the whole graph again and diff it BY EYE against what you had before the test. Byte-for-byte identical output is real evidence the cleanup was complete — a node "looking deleted" isn't proof by itself (see the pure-node/dirty-package gotchas above; even read-only inspection can dirty a package).
+
+This is how a suspected `TickBrain` logic bug (AI Watcher movement, 2026-07-02) turned out to actually be a NavMesh build-data problem one layer down — `MoveToLocation` itself returned `Failed` even called directly, which no amount of re-reading `TickBrain`'s (correct) dispatch logic would ever have revealed.
 4. Commit the chunk.
