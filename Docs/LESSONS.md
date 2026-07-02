@@ -4,6 +4,14 @@ Running log of hard-won, non-obvious findings — bugs, tool quirks, workarounds
 
 ---
 
+## 2026-07-02 — **THE CATCH/DETAIN LOOP WORKS — closing the last broken core mechanic. Verified live: patrol → detect → chase → catch at CatchRadius → detain → at-risk lost → 2s → respawn at stash → Watcher resumes patrol.** Resolves the "caught/detain unreachable in play" design gap (the old "3 candidate fixes need a human decision" flag) under the hands-off mandate.
+
+**The design rule implemented:** catch fires when the Watcher is Suspicious-or-Alert AND the target is within the profile's own `CatchRadius` (120) — **independent of current sight**. This was necessary because of a cleanly-reproduced engine behavior: **AISense_Sight goes blind at point-blank range** (observed: the Watcher standing 68uu from the player — capsules touching — with `bCanSeePlayer=false` and the meter decaying; the eye-to-target trace ends inside the target's own capsule). Any catch logic gated on live sight can therefore never fire at contact distance. The overlap-based catch was doubly dead: move completion leaves the pawn at AcceptanceRadius+capsules (~108-123uu), so capsule overlap (68uu) is never reached either. Distance-check-at-alerted is the standard stealth-game resolution and uses only numbers the profile already specs (`CatchRadius`, `DetainRespawnDelay`).
+
+**A DSL structuring gotcha cost one broken iteration:** placing the catch block BEFORE the movement dispatch, gated as `(if (and (!= alert 0) (Utilities|IsValid target)) ...)`, silently killed the whole main exec path when the target was null (patrol froze at spawn again — caught by re-running the patrol check before the catch test, which is now the standing pattern: **after ANY TickBrain edit, verify patrol still runs BEFORE testing the new feature**). The working structure: catch block AFTER the movement dispatch, gated only on `(!= alert 0)`, using the impure `CastToBP_PlayerCharacter` itself as the null gate (a failed cast dead-ends only the catch block's own tail, not the dispatch). Avoid `Utilities|IsValid` inside `and` expressions in DSL — whichever overload the writer picks, the lowering broke main-path exec here.
+
+---
+
 ## 2026-07-02 — **AI WATCHER FULLY ENABLED, HANDS-OFF: the "movement regression" was THREE stacked causes, not one — and the long-standing "needs a human Build Paths click" diagnosis was only ever a third of the story.** Both Watchers now verified patrolling their full loops + chasing + investigating, live in PIE, zero human clicks.
 
 **The three stacked causes (each one alone kept the Watcher frozen; all three had to fall):**
