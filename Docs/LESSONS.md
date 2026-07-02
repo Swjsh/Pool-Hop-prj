@@ -4,6 +4,19 @@ Running log of hard-won, non-obvious findings — bugs, tool quirks, workarounds
 
 ---
 
+## 2026-07-02 — Collision/material bug-hunt across Maple Court CLOSED OUT clean: patio walls + playground props are correctly solid, no fixes needed
+
+Continuing the systematic sweep from the pool-water/BushHide/HedgeSqueeze/QuietShoes fixes (below), checked the last two unaudited Maple Court prop categories:
+
+- **`SB_PatioWall` ×5** (Pool D's wall ring): all `BlockAll` collision + correct `MI_Greybox_Cover` material. **Correct as-is** — per `02_Neighborhood_MapleCourt.md` §3.5's "greed vs. safety sightline puzzle," this ring is a deliberately SOLID perimeter forcing entry through 2 designed gaps (hedge-squeeze + streetlight-lit). Same category as `BP_HedgeSqueeze`'s intentionally-solid hedge halves — don't confuse "blocks movement" with "bug" when the design explicitly wants a barrier.
+- **Playground props** (`SB_PlaygroundFence_N/S/W_MC`, `SB_PlaygroundPad_MC`, `SB_MonkeyBars_MC`, `SB_Slide_MC`): all `BlockAll` + correctly materialed (`MI_Greybox_Cover`, pad on `MI_Greybox_Stash`). **Correct as-is** — playground equipment and its ground pad are meant to be solid props a player walks around/on, not through, unlike the pool-water/bush/hedge-gap/pickup class of "must pass through this" bugs.
+
+**Finding methodology note:** `find_actors(name="Playground")` only returned 4 of the actual 6 playground props (missed `SB_MonkeyBars_MC` and `SB_Slide_MC`, whose labels don't contain "Playground") — the exact substring-completeness gotcha already documented in the `unreal-mcp-scene-building` skill. Caught it by re-querying with a `bounds` box around the known playground area instead of a name guess, which is the skill's own prescribed workaround and correctly surfaced both misses (plus `SM_SkySphere`/`SB_GroundPlane_MC`/`SB_StreetStrip_MC`, correctly excluded as out-of-category).
+
+**This closes the collision/material bug-hunt thread across the whole project.** Every prop category has now been audited: real bugs found+fixed = Pool_A + all 4 Maple Court pool water surfaces (blocking collision), `BP_BushHide`, `BP_HedgeSqueeze` materials, `BP_ItemPickup_QuietShoes`; correctly-solid-by-design and left alone = vault/crouch course props, verticality props, house shells, patio walls, playground props. No further sweep needed unless new props are added.
+
+---
+
 ## 2026-07-02 — **MAJOR CORRECTION: in-session `unreal-mcp` reconnect DOES work** (at least for this scenario), overturning the long-standing "no in-session reconnect, must restart Claude Code" doctrine that's driven real caution all project. Full empirical trail below — see `unreal-mcp-session` skill §1 for the corrected guidance.
 
 **The sequence, observed directly across several consecutive /loop cycles:**
