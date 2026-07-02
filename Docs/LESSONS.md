@@ -4,6 +4,34 @@ Running log of hard-won, non-obvious findings — bugs, tool quirks, workarounds
 
 ---
 
+## 2026-07-02 — **Adding a PERSISTENT component to a Blueprint: BlueprintTools has NO `add_component` — use the editor-Python `SubobjectDataSubsystem`. (This is how the vision cone finally shipped as a mesh, and how the decal/icon components were originally added.)**
+
+BlueprintTools does variables/functions/events/nodes/graphs but **cannot add an SCS component** (confirmed by listing its tools). The path that works, via the editor Python console:
+```python
+subsys = unreal.get_engine_subsystem(unreal.SubobjectDataSubsystem)
+bp = unreal.load_asset("/Game/.../BP_Foo")
+handles = subsys.k2_gather_subobject_data_for_blueprint(bp)   # handles[0] = root
+params = unreal.AddNewSubobjectParams()
+params.set_editor_property("parent_handle", handles[0])
+params.set_editor_property("new_class", unreal.StaticMeshComponent)
+params.set_editor_property("blueprint_context", bp)
+new_handle, fail_text = subsys.add_new_subobject(params)      # fail_text '' = ok
+subsys.rename_subobject(new_handle, "VisionFanMesh")
+comp = unreal.SubobjectDataBlueprintFunctionLibrary.get_object(
+           subsys.k2_find_subobject_data_from_handle(new_handle))  # the SCS template
+comp.set_static_mesh(mesh); comp.set_material(0, mat)
+comp.set_editor_property("relative_scale3d", unreal.Vector(...))
+comp.set_editor_property("relative_location", unreal.Vector(...))
+comp.set_editor_property("relative_rotation", rot)
+comp.set_collision_enabled(unreal.CollisionEnabled.NO_COLLISION)
+unreal.EditorAssetLibrary.save_loaded_asset(bp, only_if_is_dirty=False)
+```
+Worked first try. Gotchas: the created object is named `<Name>_GEN_VARIABLE` (a template, not the runtime instance) — set properties on IT and they serialize into the BP; `compile_blueprint` after so **placed instances pick up the new component** (SCS components DO propagate to placed instances, unlike CDO material/visibility overrides); make the add idempotent by scanning existing handles for the name first (re-runs then reconfigure instead of duplicating). This is **editor-visible**, so you can iterate the transform with the cheap non-PIE `CaptureViewport` loop.
+
+**Applied: the mesh vision cone that the decal couldn't do.** Decal projection bled onto walls (see prior entries); a **flattened Engine `Cone` mesh** as an SCS component doesn't — it's placed geometry. Recipe: `M_VisionConeFan` (Surface/Translucent/Unlit/TwoSided, `FanColor`+`FanOpacity` params), `relRot pitch=-90` lays the cone axis flat (local-X→world-Z, so `scale.x=0.05` flattens it to a slab; y=lateral, z=length), **`yaw=180` flips the apex to the eye** (apex-forward otherwise), `relLoc (150,0,-88)` drops it to the floor, no collision, parented to root → follows facing. Clean floor FOV cone, verified via non-PIE overhead capture. Two red herrings while iterating: (1) the flatten axis — flattening local-Z gives a thin vertical *blade*, not a floor fan (must flatten the axis that maps to world-Z after the pitch); (2) a persistent "mystery cyan square" in captures was just the **sandbox pool's translucent water surface**, not vision debris (an `identify by material` sweep confirmed only one actor used the vision material).
+
+---
+
 ## 2026-07-02 — **Visual QA pass caught the home-base starting room blown to solid white — a bounded interior PP volume's `AutoExposureBias` had overshot to +3.0 EV. Also: a non-PIE editor `CaptureViewport` DOES reflect PostProcessVolume exposure, so exposure/lighting QA needs no PIE.**
 
 **The bug:** the home-base room got a bounded `PP_HomeBase_WarmInterior` volume to lift it out of the level's dark exterior exposure lock (the main unbound PP volume runs Manual/locked EV for the moonlit exterior). That override was `AutoExposureBias = +3.0` (8× brighten) — and combined with the room's own lights (ambient 1500 cd, floor lamp + CRT rect at 3000 cd each) it blew the entire room to solid warm-white, zero detail. Dropping the bias to **0.0** fixed it (cozy warm room, all furniture/colors visible). **Generalizes: a bias added to escape a locked exterior exposure is very easy to overshoot — the interior lights are already bright relative to a moonlit exterior, so you often need little or no positive bias. Always re-capture and check for clipped highlights after adding interior exposure compensation.**

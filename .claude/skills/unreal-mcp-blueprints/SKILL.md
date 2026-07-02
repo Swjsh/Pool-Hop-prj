@@ -34,6 +34,8 @@ Get the CDO with `BlueprintTools.get_default_object(blueprint)` → returns `...
 
 Components are addressed as `CDO:ComponentName` (e.g. `...Default__BP_PlayerCharacter_C:CharMoveComp`). List them with `ActorTools.get_components(CDO)`. To enable crouch, set the movement component's `navAgentProps` with `bCanCrouch:true` (send the whole struct).
 
+**ADDING a new persistent component to a Blueprint: BlueprintTools has NO `add_component`** — use the editor-Python `SubobjectDataSubsystem` (`k2_gather_subobject_data_for_blueprint` → `add_new_subobject(AddNewSubobjectParams{parent_handle=handles[0], new_class, blueprint_context=bp})` → `rename_subobject` → `SubobjectDataBlueprintFunctionLibrary.get_object(...)` returns the SCS template; set mesh/material/`relative_location/rotation/scale3d`/collision on it → `compile_blueprint` so placed instances inherit it → save with `only_if_is_dirty=False`). Full recipe + gotchas in `Docs/LESSONS.md` (2026-07-02, "Adding a PERSISTENT component"). This is how the Watcher's vision-cone mesh + decal + state-icon components were added. (For a *runtime* component instead, the `AddComponentByClass` Blueprint node works — the costume system used it — but it's PIE-only, not editor-visible.)
+
 ## Variables, functions, events
 
 - `add_variable(bp, name, type_name)` — primitives (`bool int float byte string name text`) + basic structs (`Vector Rotator Transform Vector2D LinearColor`). Use `add_struct_variable` / `add_object_variable` for other types.
