@@ -202,6 +202,9 @@ The Watcher must be distinguishable from a player **in one glance, at night, at 
 - **Overhead alert icon** (`?`/`!`) widget — System 4, but the body reserves a `socket_head`-anchored widget component slot for it.
 
 ### 5.3 The flashlight (this IS the vision cone)
+
+> **⚠️ SUPERSEDED for the current MVP Watcher (2026-07-02) — the literal handheld prop below was never built, and that's correct, not a gap.** `CANON.md` §"Number canon" and `01_Art_And_Style_Direction.md` §4.4(a) both call the ground-projected `M_VisionCone` decal — the thing actually built and verified this session — "the flashlight" / "the flashlight range," i.e. the decal **replaces** this section's literal `SpotLightComponent`+prop for the Watcher, it doesn't sit alongside it. `01` §4.4's own table marks a literal on-character `SpotLight` "flashlight" as **Phase 5, on the Cop only** (`FloodWhite`, "a moving danger cone"). So: no handheld light/prop needed for `BP_WatcherCharacter` now — the silhouette-read goal ("carries a flashlight" as a threat-tell) is intentionally not pursued for the MVP threat; revisit only when building the Phase 5 Cop.
+
 - **Component:** a `SpotLightComponent` named `Flashlight`, attached to the right-hand socket (`hand_r`) or a dedicated `socket_flashlight` on `spine_03` pointing forward.
 - **Config:** `Intensity` moderate, warm-white color (`~4500K`), `InnerConeAngle` / `OuterConeAngle` **matched to the AIPerception `PeripheralVisionHalfAngle`** so the *visible* light cone equals the *actual* detection cone (Tech §4 "clients render the cones", Docs/07 §4 "identical cone geometry across AI types"). Suggested start: OuterCone ≈ 35° (half-angle), matching a `PeripheralVisionHalfAngle` of 35 and `SightRadius` ≈ the light `AttenuationRadius` (~1200 units start).
 - A small `StaticMesh` flashlight prop (Kenney/placeholder cylinder) attached at the same socket so the source reads diegetically.
