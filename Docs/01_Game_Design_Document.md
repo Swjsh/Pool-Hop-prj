@@ -85,6 +85,7 @@ Everything we build should reinforce at least one of these. If a feature serves 
   - *Gadgets:* noise-maker/decoy (throw to distract), sensor-jammer (temporarily disables a motion light), grappling/pool-noodle vault-assist (silly, on-brand), night-vision goggles (see cones better), quiet-shoes (reduce loudness).
   - *Costumes (mostly cosmetic, some light perks):* swim trunks (default), full wetsuit (quieter in water), inflatable flamingo ring (loud but hilarious, score flair), ghillie-bush suit (better bush hiding), retro tracksuit. Costumes lean into humor and self-expression — a huge social/retention hook.
 - Keep perks **small** so the game stays about skill and nerve, not gear. Costumes should be **90% flex, 10% function.**
+- **Loot & extraction layer (added 2026-07-01, full spec `Docs/design/11_Loot_And_Extraction.md`):** field items found during a run (e.g. speed-boosting pants) are carried at-risk and only kept permanently on a clean escape to the stash, same as score — the run should feel like an extraction, not a shopping trip. One ultra-rare nightly "Trophy" collectible per neighborhood (the garden-gnome idea) is telegraphed from a distance, has a bad-luck-protected (never purely-random-forever) spawn, and is *loud to carry* — holding it should raise your risk the way holding a bounty does in extraction shooters, not just sit quietly in a pocket. Losing loot to a catch drops it recoverable on the ground; it should never simply vanish forever. This is Phase 5+ parked work — do not build ahead of the Step 8 MVP playtest (`Docs/02` §8).
 
 ---
 

@@ -26,7 +26,10 @@ For **environment geometry** (houses, fences, patio furniture, pool coping, hedg
 | Need | First choice (free-first) | If you need AI generation | Notes |
 |---|---|---|---|
 | Suburban houses, fences, patio props | Kenney City-Kit-Suburban / Suburban Houses Pack (CC0) | Sloyd (parametric, low-poly presets) | Free packs first — see §0 |
-| Hero/one-off 3D prop (unique pool float, mailbox, lawn gnome) | — | **Sloyd** or **Meshy** (§2) | Sloyd is parametric+sliders, best for game-ready low-poly; Meshy is prompt-to-mesh, best for organic/character-adjacent shapes |
+| Hero/one-off 3D prop (unique pool float, mailbox, lawn gnome) | **Poly Pizza "Gnome" by Polygonal Mind — free CC0** (§7.1) | **Sloyd** or **Meshy** (§2) | Confirmed free hit for the specific loot-Trophy gnome — see §7 before generating one from scratch. Sloyd/Meshy still the fallback for anything else in this category. |
+| Wetsuit / ghillie / tracksuit / sneakers costume pieces | Synty Sidekick Modern Civilians ($199.99, partial fit only) | **Sloyd/Meshy** for wetsuit + ghillie specifically | No free/cheap stock pack confirmed to cover wetsuit or ghillie — see §7.2, don't spend more search time on this category before generating. |
+| Inflatable pool flamingo / floatie accessory | CGTrader free listing (license unconfirmed — verify before use, §7.3) | **Sloyd/Meshy** or hand-model (simple torus shape) | No CC0 hit found; this is simple enough that modeling/generating may beat chasing an uncertain license. |
+| Jewelry/gadget-style small trinket props (future loot roster) | Quaternius "Fantasy Props MegaKit" (CC0, itch.io) — general seed only, not jewelry-specific | Sloyd/Meshy per-item | Recurring gap, not a one-time miss — see §7.4. |
 | Player/Watcher/cop character base mesh | Existing Mannequin + Mixamo animations (already the project's pipeline) | Meshy / Tripo / Rodin for a stylized custom base mesh, if the mannequin proxy needs replacing | Don't touch this until `ABP_Unarmed`/animation pipeline is validated — see CLAUDE.md's mannequin-repair history |
 | Costume concept art / character sheets | — | **Leonardo AI** (free tier, character-reference) | 2D concept first, then decide if a costume needs an actual 3D mesh swap or is just a material/texture swap (cheaper, matches the Step 6 spec's `LoudnessModifierMult`-only design — see §3) |
 | Pool water / tile / stucco / grass PBR materials | PolyHaven (free, CC0, already the HDRI source) | **AITextured**, **GenPBR**, **3DTexel**, **MateriAI** (§4) | All have genuinely free tiers, engine-ready exports (Unreal-tagged) |
@@ -95,3 +98,34 @@ Per CANON's confirmed MCP-buildability gaps, **UMG widget-tree authoring is not 
 6. **HUD/menu art** (§5) is last — it's Step 7/8 scope, well after the current Step 5 build phase, and gated on the human authoring the actual widget trees regardless of what art feeds them.
 
 **Do not let this list become a reason to start styling early.** The project's own doctrine (`01_Art_And_Style_Direction.md` §0, `CLAUDE.md`'s Phase 1 discipline) is explicit: prove the loop is fun on grey-box first. This toolkit is here so that *when* the human decides it's time, the research is already done.
+
+---
+
+## 7. Loot & Costume item sourcing (follow-up pass, 2026-07-01, for `design/11_Loot_And_Extraction.md`)
+
+Targeted research for the specific items the loot system (`11_Loot_And_Extraction.md`) and the existing costume roster (`05_Characters.md` §4.1) need — a narrower, item-by-item pass rather than the general survey in §0–§6 above. Same rules apply: CC0 preferred, CC-BY okay if attributed, **CC-BY-NC unusable**, verify any live listing before spending budget (prices/availability shift).
+
+### 7.1 The Trophy — garden gnome
+- **Primary pick: [Poly Pizza — "Gnome" by Polygonal Mind](https://poly.pizza/m/Yy3yuQ4l6r).** Free, **CC0/Public Domain**, FBX/GLTF, explicitly tagged Unity/Unreal/Godot-ready, low-poly stylized — a genuine match for the toon look and zero licensing overhead. Use this first.
+- **Fallback if it needs a "hero" polish pass:** Fab lists a paid **"Garden Gnome"** (stylized PBR, ~3,893 quads, 4K textures) — commercial-safe under the standard Fab license, but the live price couldn't be confirmed (Fab blocks unauthenticated fetches) — check the listing directly before budgeting.
+- **Skip:** a Sketchfab CC-BY "Garden Gnome" exists but is an ultra-low-detail voxel/Blockbench model (120 tris) — too crude to read as a hero collectible; a Fab "Garden Gnomes Bundle" is horror-themed (Gnome Killer/Rampage) — wrong tone entirely, don't use it.
+- **AI-gen fallback not needed here** — the free CC0 hit is good enough to start from; only reach for Sloyd/Meshy if the design wants a distinctive pose/hat-color variant no stock model has.
+
+### 7.2 Costume/loot clothing — wetsuit, ghillie suit, tracksuit, sneakers, plain pants
+**This is the weakest-covered category — plan AI-gen time for it, don't keep searching.** Synty's Sidekick system doesn't have a confirmed pack for any of these specifically:
+- **Sidekick Starter Pack** (free) is base rig/parts only — no costume-specific pieces.
+- **Sidekick Modern Civilians** ($199.99, syntystore.com) is the closest paid candidate — 160+ modular clothing/hair/accessory parts, casual-everyday focus — but Synty doesn't publish an itemized parts list and a customer review flags gaps in formal wear. Treat as **"plausibly covers plain pants/sneakers/tracksuit-adjacent casual wear, does NOT confirm wetsuit or ghillie."** Verify against Synty's parts-list PDF or Discord before buying on the assumption it covers everything.
+- **No CC0 hit on Kenney or Quaternius** — neither stocks swappable garment meshes (they skew whole-premade-character, not modular clothing).
+- **Recommendation:** buy Sidekick Modern Civilians for the casual-wear layer (pants/sneakers/tracksuit) if/when the wardrobe expands, and **generate the wetsuit and ghillie suit via Sloyd or Meshy specifically** (§2) — both are niche enough that no stylized stock pack targets them, and this project already has that AI-gen pipeline validated for one-off hero pieces.
+
+### 7.3 Flamingo pool floatie (accessory)
+- No CC0 hit on Kenney/Quaternius (no beach/pool-themed kit currently stocked by either).
+- A free CGTrader listing exists ("Inflatable Flamingo") but **its exact license must be confirmed on the listing page before use** — CGTrader's "free" tier is sometimes editorial-only rather than commercial-cleared, and that wasn't verifiable without an account. A paid CGTrader "Inflatable Flamingo Pool Float — Low-Poly PBR" listing is explicitly game/VR-tagged and a safer bet if buying.
+- **Given this is a simple torus/inner-tube shape, hand-modeling it or generating it via Sloyd/Meshy is likely faster and more certain than chasing an unconfirmed free license** — recommend that over the CGTrader free option.
+
+### 7.4 General trinket/small-prop seed packs (future loot roster beyond the 5 named items)
+- **[Quaternius "Fantasy Props MegaKit"](https://quaternius.itch.io/fantasy-props-megakit)** — free, **CC0**, 200+ low-poly props (potions, chests, tools, market goods), shared texture sets. Good generalist seed pack, but skews medieval/fantasy — **not** jewelry/gadget-specific.
+- No dedicated CC0 "jewelry/trinket" pack was found on Kenney or Quaternius by name.
+- **Flag as a recurring gap, not a one-time miss:** every future jewelry/gadget-flavored loot item will likely need its own Sloyd/Meshy generation pass or a one-off CGTrader/Fab search — budget for that per-item rather than expecting a single pack to cover the eventual full roster.
+
+**Bottom line for §7:** the gnome is solved for free right now; clothing (wetsuit/ghillie) and small jewelry-style trinkets are the two categories to route straight to AI generation instead of continuing to search for stock packs that don't appear to exist yet in this style.

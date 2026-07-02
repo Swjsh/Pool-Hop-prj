@@ -203,6 +203,13 @@ Target: the five systems on the grey box, all state server-authoritative, judged
 - **Actions:** Cop + cross-yard chaser (own `AIP_*Profile` assets, **same cone geometry + 3-color state model**, reskinned BTs); cop spawns at `CopSpawnThreshold=90` heat (`design/06` §5.4). Build **The Grotto** on "The Heights" (`design/03` §9 blockout, Option A sealed chamber) — 100% system reuse + `DA_GrottoProfile` + one hatch transition actor + re-skinned caretaker. Environmental threats (dogs/sprinklers/cameras). Home-base intro scene (`design/01` §7, buildable from staged Kenney furniture). Remaining costume wardrobe + Synty Sidekick modular swap (`design/05` §3.2).
 - **DoD:** the full core loop from `Docs/01`; the grotto's "the one place you *stay*" tension reads; cop escalation works; costumes swap parts on the modular rig.
 
+### Phase 5 addition — Loot & Extraction (Trinkets + The Trophy)
+
+- **Prerequisites:** Steps 2 (loudness modifier hook), 3 (at-risk/banked pattern), 5 (`HandleDetain` for drop-on-capture), 6 (CostumeComponent — this is a sibling component copying its pattern, not an edit to it). Do not start ahead of Step 8 (`Docs/02` §8) — same discipline as the rest of Phase 5.
+- **Governing doc:** `design/11_Loot_And_Extraction.md` (full spec + cited research). Palette extension in `design/01` §2.1 (`LootUncommon`/`LootRare`/`LootMythic`); canon names in `CANON.md`'s "Loot & Extraction canon" section.
+- **Actions:** `E_LootRarity` enum (human in-editor, same gap as `E_AlertState`); `DA_LootItem` PrimaryDataAsset + a handful of reference instances (speed-pants trinket + the one-of-a-kind Trophy); `BP_LootPickup` actor; `BP_LootComponent` (sibling to `BP_CostumeComponent`) on `BP_PlayerCharacter`; `PlayerState.CarriedLoot`/`BankedLoot`/`EquippedTrinkets`; `BP_LootSpawnManager` (field-loot pool + Trophy pool + pity counter) on `BP_PlayerGameMode`; wire `Server_BankCarriedLoot`/`Server_DropCarriedLoot` into the existing `BP_StashZone` and `HandleDetain` overlap paths; wire the Trophy's periodic `Server_ReportAction("Action.GnomeCarry")` into the existing loudness plumbing.
+- **DoD:** field trinkets spawn from the curated pool and grant their small, situational (never dominant) buff once equipped; the Trophy spawns exactly once per night with a working pity counter, telegraphs from range, and audibly/visually spikes loudness while carried; capture drops carried loot as a recoverable pickup (never deletes it); nothing here breaks the Step 8 loop's tuning; compiles clean; committed. Two open decisions need the human before/at build time: co-op Trophy scoping (shared-team vs. per-player, `design/11` §7) and the exact trinket slot count (`design/11` §11).
+
 ---
 
 ## PHASE 6 — META & POLISH (look-dev)

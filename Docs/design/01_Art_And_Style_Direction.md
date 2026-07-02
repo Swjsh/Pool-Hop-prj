@@ -51,8 +51,13 @@ Define once, reuse in every material/widget so the game is color-consistent. Sto
 | **`ReadSafe`** (green) | 0.10, 0.85, 0.35 | `#1FD95A` | Unaware / safe / banked |
 | **`ReadWarn`** (amber) | 1.00, 0.72, 0.05 | `#FFB80D` | Suspicious / at-risk / mid loudness |
 | **`ReadAlert`** (red) | 1.00, 0.15, 0.12 | `#FF261F` | Alert / caught / high loudness |
+| `LootUncommon` | 0.55, 0.80, 1.00 | `#8CCCFF` | Uncommon field-trinket world glow (`design/11` §3) |
+| `LootRare` | 0.55, 0.20, 0.95 | `#8C33F2` | Rare field-trinket world glow (`design/11` §3) |
+| `LootMythic` | 1.00, 0.75, 0.85 | `#FFC0D9` | The Trophy's world glow — always paired with particle sparkle + a distinct chime, never hue alone (`design/11` §3) |
 
 > **Rule of two temperatures:** the *world* is cool (blues) with **warm** light pools. The *readability layer* is a separate, saturated **green→amber→red** language reserved ONLY for gameplay state, so players never confuse "warm lamp = pretty" with "amber = getting caught." Warm world light and amber alert are deliberately different hues (`LampWarm` #FFB060 vs `ReadWarn` #FFB80D-on-flat-UI) — the alert language is flatter, brighter, and always rendered unlit/on-top.
+>
+> **A third language, kept separate from both:** loot rarity (`LootUncommon`/`LootRare`/`LootMythic`) is neither a world-light color nor an alert-state color — it must never be reused for either, and vice versa, or the two "read this instantly" languages collide (`design/11` §3).
 
 ### 2.2 Grey-box master material `M_GreyboxToon` — cheap toon read now
 
