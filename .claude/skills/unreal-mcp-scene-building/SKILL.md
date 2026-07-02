@@ -19,6 +19,7 @@ Toolsets: `SceneTools` (levels/actors), `ActorTools` (transforms/components/tags
 - From a class: `SceneTools.add_to_scene_from_class(actor_type={refPath}, name, xform)` — e.g. `/Script/Engine.PhysicsVolume`. Volume brushes default to 200³; actor scale resizes them (scale 4 → 800).
 - `ActorTools.set_actor_transform`, `set_label`, `add_tag`; `get_actor_bounds` (world AABB), `get_actor_transform`. Relocate the PlayerStart with `set_actor_transform` to move the spawn.
 - `xform` is `{location:{x,y,z}, rotation:{pitch,yaw,roll}, scale:{x,y,z}}`. Yaw 0 faces +X. A cube of height H sitting on ground z=G needs center z = G + H/2.
+- **Before investigating any component's `RelativeLocation` as a suspected "position mismatch relative to a sibling," check `ObjectTools.get_properties(actor, ["rootComponent"])` first.** If the component IS the actor's root, `RelativeLocation` has no parent to be relative to — it effectively equals the actor's own world transform, by design, not a bug. Reposition a root component via `ActorTools.set_actor_transform` on the ACTOR (the semantically correct op), never by poking `relativeLocation` on the component directly — doing the latter risks moving the whole actor while looking like a harmless sub-position edit (caught this in `BP_ItemPickup_QuietShoes`, LESSONS 2026-07-02 — nearly shipped a 300uu-displaced actor before catching it via `get_actor_transform` readback and reverting).
 
 ## Finding actors exhaustively — `name` substring search can silently miss instances
 
