@@ -55,6 +55,7 @@ Almost everything routes through **`mcp__unreal-mcp__call_tool`** with `toolset_
 - **String-grepping a `.uasset` proves a *reference* exists, NOT that an array has *elements*.** `grep -ac IA_Move IMC.uasset` returning >0 means only that the import table names it.
 - **Only a FRESH PROCESS tests on-disk truth.** PIE right after authoring exercises in-memory objects. The honest test of "did it actually save correctly" is: restart the editor, or launch the game standalone (§4b), then read the state back. Make this reflex for anything load-bearing (input assets, CDO defaults, replication).
 - **`read_graph_dsl` lies** about freshly-rewired nodes and cannot traverse Enhanced Input `Triggered`/`Started` exec pins (renders them empty). Trust `get_node_infos` (pin-level) + a clean compile, never the DSL round-trip, for input wiring.
+- **`ObjectTools.set_properties` with MULTIPLE properties in one call can silently apply only the first one**, still returning `true` overall. Caught fixing `BP_BushHide.BushMesh`: one call set both `bodyInstance` and `overrideMaterials` — only `bodyInstance` took, `overrideMaterials` stayed unchanged (`Docs/LESSONS.md` 2026-07-02). When setting more than one property on the same object, either issue separate calls or verify every property in the `values` dict via a follow-up `get_properties`, not just one of them.
 
 ## 4. Running & observing the game — two channels, pick deliberately
 
