@@ -36,7 +36,7 @@
 
 **Step 3 — Pool scoring: 🔨 SCAFFOLDING BUILT, logic NOT wired.** `BP_PoolVolume` (+ `ScoringBox`) and `BP_PoolScoringComponent` (`PoolScoreComp`) compile clean, but the overlap→accrue→bank logic is not connected. Spec: `06 §3`.
 
-**Steps 4–8 (AI Watcher, couple, costume, HUD, playtest): ⛔ NOT BUILT.** Specs are build-ready (`04`, `06`, `07`).
+**⚠️ STALE NOTE (this doc has fallen behind — treat `CLAUDE.md` "Current state" as authoritative for anything below this line).** As of 2026-07-02: Steps 0–6 are all built and verified live in PIE (movement, framework state, loudness, pool scoring, AI Watcher perception+movement, AlertDirector/sensor-light/heat, and costume integration). Step 7's movement-polish half (`07 §2`: `DA_MovementTuning`, breath/dive/swim, bush-hide, hedge-squeeze, speed resolution) is also done. Remaining: Step 7's HUD half (`07 §3`, UI-heavy — coordinate with whichever session owns styling before touching it) and Step 8 (tune & playtest, needs real human play). See `CLAUDE.md`'s "Current state" for the full per-system detail and the styling/movement dual-lane coordination note.
 
 **Infra:** Ray tracing OFF (never re-enable — SBT deadlock). Editor is currently up with MCP on port 8000. Input applied via engine-level `DefaultMappingContexts` in `Config/DefaultInput.ini` (not the controller BP).
 
