@@ -4,6 +4,13 @@ Running log of hard-won, non-obvious findings — bugs, tool quirks, workarounds
 
 ---
 
+## 2026-07-01 (styling session) — ✅ RESOLVED: the "PoolID can't be set on a placed instance" limitation (and its siblings) — the variable just wasn't marked Instance Editable
+
+**Root cause found, retroactively resolving a Step-3 limitation documented in CANON/CLAUDE.md as low-priority-but-unfixed.** Placing a second `BP_PoolVolume` instance (Maple Court's Pool B) and setting `BaseScorePerSecond` via `ObjectTools.set_properties` silently failed exactly like `PoolID` always had (the call errors `"the following properties could not be set"`, but a `get_properties` immediately after shows the OLD/default value, not the one just "set"). **Fix: `BlueprintTools.set_variable_instance_editable(blueprint, variable_name, true)` then `compile_blueprint` then `save_assets`** — after that, `ObjectTools.set_properties` on a PLACED INSTANCE of that variable works correctly (verified: `BaseScorePerSecond` went from reading `10` — the untouched class default — to a confirmed `13`; `PoolID` from unsettable to a confirmed custom value). **Root cause: a Blueprint member variable defaults to NOT instance-editable unless explicitly toggled** (the checkbox is off by default in the editor's Variables panel too — this isn't MCP-specific, it's normal UE Blueprint behavior that the earlier session just didn't know to check). `add_variable` doesn't set it either, so any variable added purely via `add_variable` (i.e. everything built by MCP so far) needs this call before per-instance overrides will ever stick.
+
+**Generalizes — audit every other "instance-level tuning" var across the project for the same silent-failure pattern**, not just `BP_PoolVolume`. Prime suspects: anything meant to differ per-placed-instance (`AlertDirector` thresholds if ever instanced twice, per-Watcher `AIP_WatcherProfile` overrides, any future per-pool/per-actor tuning field). The class CDO / defaults always read+write fine regardless of this flag — it's specifically placed-instance overrides that need it. Cheap to apply proactively: `set_variable_instance_editable(bp, var, true)` for any var you expect a level designer (human or agent) to tweak per-placement, right after `add_variable`, before the first `compile_blueprint`.
+
+## 2026-07-01 (styling session) — Cannot create or duplicate `.umap` Level assets via MCP; no "new level" tool exists at all
 ## 2026-07-02 (movement/hiding/swimming session) — `BP_BushHide` overlap testing: an hour lost to a wrong Z coordinate that LOOKED exactly like a collision bug — always re-`trace_world` the ground height at a NEW X/Y before reusing an old Z value
 
 ### The finding
