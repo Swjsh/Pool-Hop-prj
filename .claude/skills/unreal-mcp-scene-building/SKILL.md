@@ -20,6 +20,10 @@ Toolsets: `SceneTools` (levels/actors), `ActorTools` (transforms/components/tags
 - `ActorTools.set_actor_transform`, `set_label`, `add_tag`; `get_actor_bounds` (world AABB), `get_actor_transform`. Relocate the PlayerStart with `set_actor_transform` to move the spawn.
 - `xform` is `{location:{x,y,z}, rotation:{pitch,yaw,roll}, scale:{x,y,z}}`. Yaw 0 faces +X. A cube of height H sitting on ground z=G needs center z = G + H/2.
 
+## Finding actors exhaustively — `name` substring search can silently miss instances
+
+`SceneTools.find_actors(name=...)` matches against the actor's **Label**, not its class — an instance whose Label doesn't happen to contain your search string is silently excluded, with no error or indication anything was skipped. Bit a project-wide "audit all N pools" sweep: `find_actors(name="PoolVolume")` returned 4 of 5 pool volumes; the 5th (an older instance predating a Label-naming convention) simply didn't have "PoolVolume" in its Label and was invisibly dropped from the result. **For any exhaustive/audit-style query, use `find_actors(actor_type={refPath: "/Game/Path/BP_Foo.BP_Foo_C"}, name="")` (the class filter) instead of a name guess** — this matches by actual class, catching every instance regardless of how it was labeled. Reserve name-substring search for "find the one thing I already know the name of," not "find all of X."
+
 ## Probe ground before you place — the floor is NOT flat
 
 The ThirdPerson template has a raised central mound (spawn ~z=210 at origin) sloping to the z=0 outer floor, plus scattered raised platform strips (z=200). **Always trace first:**
