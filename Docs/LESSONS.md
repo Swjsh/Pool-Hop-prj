@@ -4,6 +4,18 @@ Running log of hard-won, non-obvious findings — bugs, tool quirks, workarounds
 
 ---
 
+## 2026-07-02 — **Visual QA pass caught the home-base starting room blown to solid white — a bounded interior PP volume's `AutoExposureBias` had overshot to +3.0 EV. Also: a non-PIE editor `CaptureViewport` DOES reflect PostProcessVolume exposure, so exposure/lighting QA needs no PIE.**
+
+**The bug:** the home-base room got a bounded `PP_HomeBase_WarmInterior` volume to lift it out of the level's dark exterior exposure lock (the main unbound PP volume runs Manual/locked EV for the moonlit exterior). That override was `AutoExposureBias = +3.0` (8× brighten) — and combined with the room's own lights (ambient 1500 cd, floor lamp + CRT rect at 3000 cd each) it blew the entire room to solid warm-white, zero detail. Dropping the bias to **0.0** fixed it (cozy warm room, all furniture/colors visible). **Generalizes: a bias added to escape a locked exterior exposure is very easy to overshoot — the interior lights are already bright relative to a moonlit exterior, so you often need little or no positive bias. Always re-capture and check for clipped highlights after adding interior exposure compensation.**
+
+**Two reusable capability facts confirmed:**
+1. **A non-PIE editor `CaptureViewport` (with an explicit `captureTransform`) applies the scene's PostProcessVolume settings** — both the non-PIE and the `bSimulate:true` captures of the room showed the identical blown-white, and both showed the identical fixed result. So **you can QA lighting/exposure/materials with a plain editor capture — no need to StartPIE** (PIE is only needed to observe gameplay/AI/animation). Cheaper loop: edit a light/PP/material → `CaptureViewport` → assess → iterate, all without PIE.
+2. **Reading level actors during PIE/Simulate throws `"The Editor is currently in a play mode"`** from `EditorActorSubsystem.get_all_level_actors()` — it wants the editor world. Stop PIE (or use `UnrealEditorSubsystem.get_game_world()` + `GameplayStatics.get_all_actors_of_class`) before enumerating/editing level actors.
+
+**QA-pass workflow that works (repeatable):** enumerate actors → bucket by world-space region (the neighborhoods live at large X offsets: home-base ≈ X−6000, Maple Court ≈ X+30000) → get a landmark's `get_actor_bounds` → position the camera inside/above it (for an enclosed interior, the camera MUST be inside the local PP volume's bounds or the interior exposure won't apply) → `CaptureViewport` → read the PNG. Maple Court passed clean this way (night-exposed, blue-water pools, house shells, warm accent lights all correct); only the home-base needed the exposure fix.
+
+---
+
 ## 2026-07-02 — **The per-tick `Accessed None VisionConeMID` error was crash-recovery-specific, not a normal-play bug — and a DSL `(if (Utilities|IsValid x) …)` guard does NOT lower to a working branch (it dead-ends + orphans the guarded nodes).**
 
 **Diagnosis first (before "fixing" it):** live PIE reads showed `VisionConeMID` is reliably created by BeginPlay in fresh sessions (valid `MaterialInstanceDynamic_0` in two independent fresh runs; `create_dynamic_material_instance()` also succeeds). The per-tick errors only appeared during the **post-editor-crash recovery churn** (rapid PIE restarts after a crash), not on clean cold loads. So the "per-tick error" was lower-severity than it looked — a crash-recovery race, and on a decal that's **hidden/mis-built anyway** (see the vision-cone-decal entry below). Lesson: read the actual failure distribution before assuming a logged error is a normal-play bug — timestamp-cluster the occurrences against what else was happening (here: they all fell inside the crash-recovery window).

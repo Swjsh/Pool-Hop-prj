@@ -50,6 +50,8 @@ Place a `PhysicsVolume` actor (not a Blueprint — it can't be one), scale to si
 
 `SetCameraTransform` / `GetCameraTransform` move the editor camera independently. `CaptureEditorImage` grabs the whole editor window.
 
+**A non-PIE editor `CaptureViewport` applies the scene's PostProcessVolume settings** (exposure, color grading, etc.) — verified 2026-07-02: non-PIE and `bSimulate:true` captures of the home-base room showed identical exposure. So **QA lighting/exposure/materials with a plain editor capture — no PIE needed** (PIE is only for gameplay/AI/animation). Cheap loop: edit a light/PP/material → `CaptureViewport` → assess → iterate. **For an enclosed interior with its own bounded PP volume, the camera must be INSIDE that volume's bounds** or the interior grading won't apply (get the volume's `get_actor_bounds` first). Caught the home-base blown-white over-exposure (`AutoExposureBias +3.0`, see LESSONS) this way. Note `EditorActorSubsystem.get_all_level_actors()` throws "Editor is currently in a play mode" during PIE — stop PIE before enumerating level actors, or use `UnrealEditorSubsystem.get_game_world()`.
+
 ## Play-In-Editor verification (no automated tests in this project)
 
 - `EditorAppToolset.StartPIE(options={bSimulate:false, playMode:"PlayMode_InViewPort", warmupSeconds:1})` — completes after BeginPlay + warmup. `bSimulate:true` ticks the world without possessing a pawn (good for observing AI/physics later).
