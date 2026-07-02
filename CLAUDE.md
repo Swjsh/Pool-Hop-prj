@@ -95,7 +95,7 @@ Start-Process "C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEd
 ```
 The editor does NOT auto-start the MCP server; the `-ExecCmds` arg does. Poll `Test-NetConnection 127.0.0.1 -Port 8000`.
 
-**Known issues (deferred, not blocking):** several template assets are still 0-byte from the original corruption — Manny's material instances/textures/rigs and the Touch UI widgets (grey-box is fine per doc 02; revisit before the Synty swap).
+**Known issues:** none currently open from the original template corruption — re-verified this session (`find Content -name "*.uasset" -size 0` across the whole project returns zero results; `SKM_Manny_Simple`'s two material slots resolve to the real `MI_Manny_01_New`/`MI_Manny_02_New` instances, parented to `M_Mannequin`, on both `BP_PlayerCharacter` and `BP_WatcherCharacter`). This stale note previously said Manny's materials/textures/rigs and the Touch UI widgets were still 0-byte — that was true before the `Mannequins/`+`Input/Touch/` tree restore (see the 2026-07-01 "ROOT-CAUSE asset corruption found + FIXED" note above) but was never corrected afterward. Manny renders in proper mannequin skin materials, not grey.
 
 ---
 
