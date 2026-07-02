@@ -14,6 +14,7 @@
 4. **The skill [`unreal-mcp-session`](../../.claude/skills/unreal-mcp-session/SKILL.md)** — how to connect to the editor, discover/call MCP tools, verify work, and run/observe the game. Then its three domain skills as needed (`unreal-mcp-blueprints`, `unreal-mcp-scene-building`, `unreal-input-probe`).
 5. **[`../LESSONS.md`](../LESSONS.md)** — the gotcha log. Skim the top 3 entries at minimum.
 6. Then `git log --oneline -20` to see the true latest state.
+7. If MCP is unavailable this session and you're in design-mode fallback (see the human's original "go style the game" instruction), **[`10_Asset_Generation_Toolkit.md`](10_Asset_Generation_Toolkit.md)** has a vetted, current shortlist of free/cheap AI asset-generation tools — don't re-research from scratch.
 
 ## 1. The 5 prime directives (violating these is how the project breaks)
 
