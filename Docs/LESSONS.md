@@ -4,6 +4,10 @@ Running log of hard-won, non-obvious findings — bugs, tool quirks, workarounds
 
 ---
 
+## 2026-07-02 — **When "copy this layout to N other spots" is the ask, don't copy fixed coordinates — the spots are rarely actually identical.** Dressing Maple Court's Lots A/B/C with a fence+shed+chairs+trees package (user request, post-playtest) started as "build it once on Lot A, then paste the same relative offsets onto B and C." That would have been wrong: **the 4 Maple Court pools are different sizes** (Pool A ext=350×250, B=325×250, C=300×225 — deliberate score-tier variants, not a bug), and **Lot C's house sits on the OPPOSITE side of its pool from A/B** (mirrored street layout, both sides of a road facing inward). A fixed-offset copy would have either clipped through Lot C's smaller pool or put the fence/shed on the wrong side entirely. Fixed by writing the builder as a function of each lot's OWN measured geometry (pool water-surface `get_actor_bounds()` for size, `sign(house.y - pool.y)` for orientation) rather than hardcoded deltas from the first instance. **General rule: before replicating a hand-tuned layout N times, check whether the target spots are actually congruent (same size/orientation) — "looks like the same kind of thing" in a level often means "same category, different dimensions."** A quick `get_actor_bounds()` sweep across all N targets before writing the replication script would have caught this in one round-trip instead of after building Lot A's version once.
+
+---
+
 ## 2026-07-02 — **First real human playtest: 6 bugs found and fixed in one pass (pool/swim/score, costume cylinder, vault FX, crouch hold-vs-toggle, missing loudness tier, bush placement). Two new MCP-safety gotchas earned the hard way.**
 
 **The bugs (all playtest-sourced, all fixed same session):**
