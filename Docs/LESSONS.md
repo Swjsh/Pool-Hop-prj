@@ -4,6 +4,22 @@ Running log of hard-won, non-obvious findings — bugs, tool quirks, workarounds
 
 ---
 
+## 2026-07-02 (potentially significant, needs real-movement confirmation) — all 4 Maple Court pool water surfaces had blocking collision (`BlockAll`), while the sandbox's `Pool_A` correctly had `NoCollision` — every pool-scoring test this session used teleport, which can silently bypass exactly this class of bug
+
+**What was found:** following up on the Pool_A water-material fix (previous entry), checked the SAME 4 Maple Court water surfaces' `bodyInstance.collisionProfileName` while I had the actors open. Result: all 4 = `"BlockAll"`. `Pool_A`'s own surface (the one most heavily tested this whole session) = `"NoCollision"`, matching the project's own documented recipe (`unreal-mcp-scene-building` skill: "Disable a decorative plane's collision so players pass through").
+
+**Why this matters:** checked each water plane's Z-position against its paired pool's basin bounds (`ActorTools.get_actor_bounds` on the `BP_PoolVolume`). E.g. `Pool_MC_A`: basin Z range `[-88, 168]`, water surface at flat Z=20 — squarely inside the range, not off to the side or floating above the traversable area. A `BlockAll` plane sitting there would act as a solid floor a player's capsule cannot descend through, physically preventing entry into the deeper basin from above.
+
+**Why this wasn't caught by any of this session's "verified live in PIE" pool-scoring claims:** every one of them used `ActorTools.set_actor_transform` to place the pawn INSIDE the pool directly (documented as necessary because "spawn-transform override fails on collision, but a post-spawn teleport correctly re-triggers overlaps" — see the Step 3 entries in CLAUDE.md). A hard `SetActorLocation`-style teleport can interpenetrate solid geometry without being blocked or resolved the way a player WALKING or SWIMMING into the same space would be. This means the scoring Blueprint LOGIC was genuinely, correctly verified — but the test method itself was blind to a collision setup that would stop a real player from ever reaching that logic through normal gameplay.
+
+**Fix:** matched `Pool_A`'s confirmed-correct config exactly (`collisionProfileName="NoCollision"`) on all 4 Maple Court water surfaces. Verified via property readback, not just the `set_properties` return value.
+
+**Honest confidence level — NOT the same as the NavMesh regression's rigorous isolated-test diagnosis:** this fix is well-reasoned (matches an established, proven-correct reference config; geometrically the collision plane does sit in the entry path) but was **not confirmed via an actual live movement test**, because doing so would require adding a temporary movement probe to `BP_PlayerCharacter`, which is this lane's explicitly excluded file. Don't treat "Maple Court pool entry now works" as proven — it's a strong inference from static config + geometry, not a live-tested fact. **The movement/gameplay lane (which owns `BP_PlayerCharacter` and CAN test real movement) or the human should confirm this with an actual playtest.**
+
+**Generalizable lesson:** teleport-based verification (`set_actor_transform`) proves overlap/scoring LOGIC works, but is fundamentally blind to collision-blocking bugs that only a real walking/swimming entry would hit. When a system's only verification path has been teleport-based, a "does this work" claim should be read as "the logic is correct," not "a real player can reach this."
+
+---
+
 ## 2026-07-02 (independent re-confirmation of the NavMesh regression) — Fresh 20s wall-clock test reproduces zero Watcher movement exactly; three more plausible config-level culprits checked and ruled out, strengthening the existing "needs a human Build Paths click" conclusion rather than finding a new fix
 
 **Why re-tested:** an earlier cycle this same session (before the regression was flagged) had watched the sandbox Watcher move from `X=100` to `X=330` across a live PIE window — seemingly contradicting the later "zero movement" finding. Needed to resolve the conflict with a rigorous test rather than trust either data point.
