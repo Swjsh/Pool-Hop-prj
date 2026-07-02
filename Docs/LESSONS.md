@@ -4,6 +4,13 @@ Running log of hard-won, non-obvious findings — bugs, tool quirks, workarounds
 
 ---
 
+## 2026-07-02 (movement/hiding/swimming session) — `ObjectTools.set_properties`: to create a NEW instanced sub-object inline (e.g. an `InputModifier` on an `InputMappingContext` mapping), pass the **class path** as the `refPath` value directly — do NOT wrap it as `{"instance": "<ClassPath>"}`
+
+### The finding
+Adding `IA_SwimUpDown`'s negative-axis key mapping (`Left Ctrl` → `-1`) to `IMC_Default` needed a brand-new `InputModifierNegate` instance in the mapping's `modifiers` array (existing modifiers on other mappings are pre-existing instanced sub-objects like `IMC_Default.IMC_Default:InputModifierNegate_0`, created once, long ago, presumably in-editor). The tool's own schema doc says "For instanced sub-object properties, pass a class path as the instance member" — read literally, this means wrap it as `{"instance": "/Script/EnhancedInput.InputModifierNegate"}`. **That produced a silent no-op**: `set_properties` returned `true`, but a follow-up `get_properties` showed the modifiers array element as the literal string `"None"` — no new object was created, no error was raised either.
+**What actually works:** pass the class path as the plain `refPath` value, exactly like an existing-instance reference: `{"refPath": "/Script/EnhancedInput.InputModifierNegate"}`. The tool detects the path resolves to a *class* rather than an object instance and auto-instantiates a brand-new sub-object of that class (owned by the target asset), returning it as a real new instance (confirmed: `IMC_Default.IMC_Default:InputModifierNegate_1` appeared after save, verified via `get_properties` immediately after and again via a **cold standalone process** reading `GetAll InputMappingContext DefaultKeyMappings` from disk).
+**Generalizes:** whenever an MCP tool's schema description mentions a special JSON shape for "creating" something inline, don't trust the described key name at face value — verify with a `get_properties` (or equivalent) round-trip immediately after the call. A `true` return and no error do NOT mean the operation did what you intended; this is the same family of trap as the `set_pin_value`-doesn't-mark-dirty lesson below (success signals that don't mean success).
+
 ## 2026-07-02 (post-MCP-reconnect session) — CRITICAL, SILENT-DATA-LOSS RISK: `BlueprintTools.set_pin_value` does NOT mark the containing package dirty, so `save_assets` silently skips it — a pin edit can affect live runtime behavior for an entire session while never reaching disk
 
 ### The finding
