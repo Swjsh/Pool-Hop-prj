@@ -41,16 +41,19 @@ Tonight's standalone-probe diagnostic (LESSONS 2026-07-03) confirmed the histori
 
 ## 1. Crouch animation
 
-**STATUS: [~] IN PROGRESS**
+**STATUS: [x] DONE (mechanism) — Control Rig procedural crouch built, wired, compiles clean end-to-end. Visual pose quality NOT confirmed (see caveat) — a genuine open item for a human playtest or a future session's fresh screenshot attempt.**
 
 **Confirmed (LESSONS 2026-07-03):** AnimGraph nodes are not reachable via `BlueprintTools`/`write_graph_dsl` (two independent negative probes). Zero crouch-anything exists in the project's 119-sequence library or `_ThirdPartyStaging`. The vault/slide precedent (`d6a907d`) used `AnimMontage` + `Montage_Play` from the EventGraph as a workaround.
 
-**Try, in order, stop at the first that works:**
-1. **Control Rig procedural crouch (unexplored — try first).** `animation_toolset.toolsets.controlrig.ControlRigTools` is real and proven (BigVegas IK retarget). Investigate a Control Rig on `ABP_Unarmed`'s post-process chain reading a Blueprint-exposed `CrouchAlpha` float to procedurally lower the pelvis/spine. **Time-box this: ~30-45 min of iteration, then fall back if it hasn't clicked — don't grind past that.**
-2. **Montage fallback (near-certain, lower fidelity).** Find the closest tonal match in the 119-sequence library (a lowered/hunched combat pose), wrap as `AM_Crouch` (`unreal.AnimMontageFactory`, same pattern as `AM_Slide`/`AM_Vault`), `Montage_Play` from `HandleCrouchPressed`'s crouch-start branch only.
-3. **If both fail:** leave the current mechanically-correct-but-static crouch as-is. Not a regression — don't ship something worse chasing a fix.
+**Built via option 1 (Control Rig), full details in LESSONS 2026-07-03 "crouch animation":**
+- `CR_Crouch` (`_Project/Characters/`): a Control Rig with bones imported from `SKM_Manny_Simple`, a forward-solve graph that reads the pelvis bone's transform, subtracts a fixed 32-unit Z offset, and writes it back (all other transform channels passed through unchanged). Built by guessing the `RigUnit_<Name>` node-naming convention live (no schema-discovery tool exists for RigVM units) — worked on the first try for `GetTransform`/`SetTransform`/`MathFloatMul`/`MathFloatAdd`.
+- Wired into `ABP_Unarmed`'s AnimGraph as a new `Misc.|ControlRig` node, spliced between the existing Slot and the pre-existing foot-IK Control Rig node (`Slot → CR_Crouch → foot-IK CR → Root`).
+- **Dynamically gated, not always-on**: the node's own `Alpha` blend pin (the same mechanism the foot-IK rig already uses) is driven every tick by a new `ABP_Unarmed.CrouchAlpha` float, set from `ACharacter.bIsCrouched` (native engine property, no custom cast needed) via a `Math|Float|SelectFloat` (1.0 crouched / 0.0 not). Spliced into the existing `EventBlueprintUpdateAnimation` chain using the standard break-link/insert/reconnect pattern, not touching the pre-existing Speed/Direction calculation logic. This guarantees the rig's effect is fully zero outside of crouch — bounds the blast radius of any pose-quality issue to only the crouch state, not all locomotion.
+- Compiles clean (`warnings_as_errors=true`) on both `CR_Crouch` and `ABP_Unarmed`, saved to disk.
 
-**Verify:** `StartPIE(bSimulate=True)` + `CaptureViewport` on a crouched pawn — pose visibly changed from standing, not a T-pose, not identical to standing. If step 3 was taken instead, verify is just "confirm nothing regressed" (capsule shrink still works).
+**Honest caveat, not swept under the rug:** whether the resulting pose actually LOOKS like a good crouch (vs. legs stretching/clipping into the floor, since there's no two-bone leg IK repositioning the feet to match the lowered pelvis) was never visually confirmed. Toggled `bIsCrouched=true/false` live in PIE and attempted `CaptureViewport` comparisons — the character was consistently too small/distant in frame to judge a 32-unit local pose change, across several rounds of camera-position correction (same limitation that affected the player-skin task, see LESSONS). This is a real, load-bearing gap: **the next session or the human should either take one focused close-up screenshot attempt with a properly-computed camera transform, or just eyeball it in a real Play session** before considering this fully done. If it looks bad, the fix is tuning `CR_Crouch`'s `AddCrouchZ.A` offset (currently a literal -32.0, in `RigVMModel`) or adding real leg IK — not re-deriving the wiring, which is confirmed structurally correct.
+
+**Verify (partial):** `bIsCrouched` toggled live via `ObjectTools.set_properties`, both ABP and Control Rig compile clean, Alpha pin correctly wired to gate the effect to zero when not crouching. **Not verified:** actual visual pose quality.
 
 ---
 
