@@ -21,7 +21,7 @@
 
 ## 0. Swim re-verification + defensive self-heal
 
-**STATUS: [~] IN PROGRESS** — the collision property is confirmed correct; full behavioral confirmation is the remaining work.
+**STATUS: [x] DONE — verified via live PIE teleport-test on 2 pools (MOVE_Swimming confirmed) + a red-proofed self-heal test (deliberately broke collision, confirmed BeginPlay auto-corrects it in a live PIE world).**
 
 Tonight's standalone-probe diagnostic (LESSONS 2026-07-03) confirmed the historically-recurring root cause (`StaticMeshComponent.bUseDefaultCollision` on the 5 water surfaces) is currently **correct** (`False` + `CollisionEnabled=NoCollision` on all 5, verified in a cold standalone process, no MCP). What it could NOT confirm without coordinates or MCP: whether `MOVE_Swimming` actually triggers on contact.
 
@@ -32,6 +32,10 @@ Tonight's standalone-probe diagnostic (LESSONS 2026-07-03) confirmed the histori
 4. **Add a defensive self-heal regardless of what step 3 finds**: on `BP_PoolVolume.EventBeginPlay`, explicitly force `bUseDefaultCollision=False` + `CollisionEnabled=NoCollision` on its own water surface component every time the level loads. This bug's mechanism has recurred without full root-cause multiple times — make the runtime self-correct rather than trusting the saved asset property to hold.
 
 **Verify (flip to `[x]` only after this passes):** fresh PIE or standalone, teleport into 2 different pools, `CharMoveComp.movementMode == MOVE_Swimming` on both, read directly (not inferred from a screenshot). Then update `CLAUDE.md` "Current state" — note it's verified via cold-process/fresh-teleport, not just "✅ RESOLVED" again.
+
+**RESOLVED 2026-07-03 (post-reconnect session).** Both pools tested (sandbox + Maple Court A) confirmed `MOVE_Swimming` via teleport + `get_properties` read. One methodology finding along the way: a SINGLE teleport doesn't trigger a physics-volume re-check on the very next read (`MOVE_Walking` immediately after landing inside the volume's bounds) — a follow-up position update (or real continuous player movement) does. Not a swim bug, a teleport-testing artifact; don't read a single post-teleport frame as ground truth for volume-membership checks again.
+
+**Self-heal built differently than originally planned, and it's more general-purpose as a result.** `bUseDefaultCollision` turned out to have **no Blueprint-exposed setter at all** (confirmed via `find_node_types` — no `SetUseDefaultCollision` node exists anywhere in the node catalog), so a BeginPlay fix can't touch that property directly. Instead: `BP_PlayerGameMode.EventBeginPlay` now calls `GetAllActorsOfClass(StaticMeshActor)`, casts each, compares its `StaticMeshComponent.GetStaticMesh()` against a new `WaterSurfaceMesh` variable (set to `/Engine/BasicShapes/Plane`), and calls `SetCollisionEnabled(NoCollision)` on every match. This works regardless of `bUseDefaultCollision`'s state (a runtime `SetCollisionEnabled` call overrides whatever collision the initial body-setup produced) and covers all 5 water surfaces generically — no per-pool wiring, no hardcoded actor refs, and it would also cover a 6th pool added later without any changes. **Red-proofed, not just happy-path tested**: deliberately set one water surface's `CollisionEnabled` to `QueryAndPhysics` on the editor (persistent-level) actor, started PIE, and confirmed the live PIE-world copy read back `NoCollision` — the guard actually corrects a broken state, not just leaves an already-correct one alone.
 
 ---
 
