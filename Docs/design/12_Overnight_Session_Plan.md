@@ -41,7 +41,7 @@ Tonight's standalone-probe diagnostic (LESSONS 2026-07-03) confirmed the histori
 
 ## 1. Crouch animation
 
-**STATUS: [ ] NOT STARTED**
+**STATUS: [~] IN PROGRESS**
 
 **Confirmed (LESSONS 2026-07-03):** AnimGraph nodes are not reachable via `BlueprintTools`/`write_graph_dsl` (two independent negative probes). Zero crouch-anything exists in the project's 119-sequence library or `_ThirdPartyStaging`. The vault/slide precedent (`d6a907d`) used `AnimMontage` + `Montage_Play` from the EventGraph as a workaround.
 
@@ -111,9 +111,12 @@ The user explicitly asked for loot tonight, overriding doc 11's own "don't build
 
 ## 4. Player skin — wire one of the 3 unwired Mixamo candidates
 
-**STATUS: [ ] NOT STARTED**
+**STATUS: [~] IN PROGRESS — substituted a material-only re-skin (DONE) for the full Mixamo mesh swap (BLOCKED, see below).**
+**BLOCKED ON:** the editor Python console (needed for `IK_Josh`/`RTG_Manny_To_Josh` retargeting — no dedicated MCP toolset exists for this) requires at least one registered Slate window; this session found `SlateInspectorToolset.Windows(list)` returning `[]` and `CaptureEditorImage` failing ("Failed to capture any editor windows") — confirmed not transient (retried once). The engine/MCP itself is fully alive throughout (compiles, PIE start/stop, all dedicated toolsets work) — this is specifically a missing-Slate-window gap, not a connection problem. A `retarget_josh.py` script (same proven pipeline as BigVegas) is fully written and ready in the scratchpad, waiting on a session where the Slate window is present.
 
-`SK_Kaya`/`SK_Josh`/`SK_Michelle` were imported (mesh+skeleton, no materials/animations) but never wired — the old two-lane split that blocked touching `BP_PlayerCharacter` no longer applies.
+**Done instead (same visual-differentiation goal, zero Python-console dependency):** built `MI_PlayerBody` (duplicate of `MI_WatcherBody`, same `M_GreyboxToon` parent) — `BaseColor(0.05,0.08,0.11)`, `ShadowColor(0.02,0.03,0.045)`, `RimColor(0.25,0.55,0.65)` cyan-teal, `EmissiveColor(0,0,0)` — a distinct stealth-suit look on the existing Manny mesh, applied to both slots of `BP_PlayerCharacter`'s CDO `CharacterMesh0.overrideMaterials`. **Verified via direct property readback only** (values round-tripped exactly on both slots; confirmed no placed level instance needs a separate patch) — 3 `CaptureViewport` attempts this session (plus one from a prior session) all failed to visually frame the character clearly enough to eyeball the color (see LESSONS 2026-07-03 "player re-skin" entry for the full camera-math/bounds-tool trail); time-boxed and accepted the property-level verification as sufficient rather than continuing to iterate on camera positioning.
+
+**Still not done, for a future session with a live Slate window:** the full mesh+animation swap onto one of `SK_Kaya`/`SK_Josh`/`SK_Michelle`. `SK_Kaya`/`SK_Josh`/`SK_Michelle` were imported (mesh+skeleton, no materials/animations) but never wired — the old two-lane split that blocked touching `BP_PlayerCharacter` no longer applies.
 
 **Recipe (identical to the proven BigVegas pipeline, LESSONS 2026-07-02 — just re-point at a different target skeleton):**
 1. Pick one candidate (try Josh or Michelle for a silhouette distinct from the Watcher's BigVegas).
