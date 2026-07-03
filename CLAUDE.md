@@ -25,6 +25,8 @@ Stylized online co-op stealth game in **Unreal Engine 5.8** (Blueprints-first, C
 
 ## Current state
 
+**✅ Pause menu built (2026-07-03)** — `IA_Pause`→`Escape`, `WBP_PauseMenu` (Resume/Restart/Quit), toggled via `BP_PlayerController.bIsPaused`. Compiled clean, structurally verified; a real-keypress end-to-end test is the one thing left for a human/input-probe pass.
+
 **✅ Loot system built (2026-07-03) — `E_LootRarity`, `DA_LootItem` + 2 instances (SpeedPants/GardenGnome), `PlayerState.CarriedLoot`/`BankedLoot`, `BP_LootPickup`, bank/drop spliced into the existing `Server_BankAtRisk`/`HandleDetain`. Pickup→carry step live-confirmed; carry→bank step has the identical fix applied but wasn't independently re-confirmed live (test-methodology flakiness, not a known code issue — see LESSONS). Drop-on-capture simplified to "loot is lost" rather than the fuller "respawns as a recoverable pickup" spec — flagged as a real follow-up.**
 
 **✅ MCP RECONNECTED (2026-07-03, post-restart) — swim is now fully closed out, `MOVE_Swimming` confirmed live on 2 pools + a red-proofed self-heal shipped (see LESSONS top entry). Read [`Docs/design/12_Overnight_Session_Plan.md`](Docs/design/12_Overnight_Session_Plan.md) — it has STATUS markers per item, resume at the first non-`[x]` section.** `BP_PlayerGameMode.EventBeginPlay` now force-corrects any `StaticMeshActor` using the `/Engine/BasicShapes/Plane` mesh to `NoCollision` every level load, regardless of what the saved asset property says — this should make the swim-collision bug's recurrence moot even though its root trigger mechanism was never fully identified.

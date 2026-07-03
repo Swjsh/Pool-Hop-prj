@@ -56,7 +56,7 @@ Tonight's standalone-probe diagnostic (LESSONS 2026-07-03) confirmed the histori
 
 ## 2. Menu system
 
-**STATUS: [~] IN PROGRESS** (three sub-items — track each independently, see sub-status lines; 2a done, 2b/2c remain)
+**STATUS: [~] IN PROGRESS** (three sub-items — track each independently, see sub-status lines; 2a + 2b done, 2c remains)
 
 `09_Design_Review_Punchlist.md` §C confirms: no menu doc, no results-screen design, menus explicitly parked. `UMGToolSet` is confirmed MCP-buildable (`WBP_HUD` proof). Build in order — results screen first (closes the core loop), then pause, then main menu.
 
@@ -68,11 +68,11 @@ Tonight's standalone-probe diagnostic (LESSONS 2026-07-03) confirmed the histori
 - **Verified:** compiled clean on both `BP_PlayerGameMode` and `BP_PlayerGameState`; forced `NightTimeRemaining` near-zero via CDO default + fresh PIE, confirmed `bNightOver=true` (the trigger condition) and zero runtime errors/warnings in the log during the window this executed (a null-target call in this chain would produce a very characteristic "Accessed None" log line — none appeared). **Honest caveat:** a `CaptureViewport` screenshot during this same PIE session did NOT clearly show the widget on screen — inconclusive rather than a negative (this tool's PIE-viewport-vs-UMG-overlay behavior isn't an established, proven combination in this project's history, unlike its already-proven non-PIE level-lighting use). Structural verification (clean compile + correct pin wiring + trigger firing + no errors) is solid; a from-scratch human Play session would be the fully conclusive check.
 
 ### 2b. Pause menu (`WBP_PauseMenu`)
-**SUB-STATUS: [ ] NOT STARTED**
-- New `IA_Pause` in `Content/Input/`, bound to `Escape` in `IMC_Default`.
-- `WBP_PauseMenu`: "Resume" / "Restart Night" / "Quit to Desktop".
-- `BP_PlayerController`: `IA_Pause` toggles create/remove + `SetGamePaused` + input mode.
-- **Verify:** in live PIE (or standalone + real `Escape` keypress via the input-probe skill), confirm the game actually pauses (a moving actor stops), the menu shows, Resume un-pauses cleanly.
+**SUB-STATUS: [x] DONE — built, wired, compiled clean, verified structurally + partial live check; a real-keypress end-to-end test wasn't done (see below).**
+- `IA_Pause` (duplicated from `IA_Jump`) added to `Content/Input/Actions/`, bound to `Escape` in `IMC_Default.DefaultKeyMappings` — confirmed via readback after save.
+- `WBP_PauseMenu`: same dark-Border + centered-VerticalBox pattern as `WBP_ResultsScreen`. "PAUSED" title, Resume/Restart Night/Quit to Desktop buttons.
+- `BP_PlayerController`: new `bIsPaused` bool + `PauseMenuWidget` object ref. `IA_Pause`'s `Started` pin → `Branch(bIsPaused)` → **true (already paused):** `RemoveFromParent` → `SetInputMode_GameOnly` → `SetGamePaused(false)` → `bIsPaused=false`. **false (not paused):** `CreateWidget(WBP_PauseMenu)` → `AddToViewport` → `SetInputMode_UIOnly` → `SetGamePaused(true)` → `bIsPaused=true`. Resume button in the widget itself does the same un-pause sequence directly (doesn't need to call back into the controller).
+- **Verified:** compiled clean on both `BP_PlayerController` and `WBP_PauseMenu`; `get_node_infos` confirmed every pin wired to the right index; CDO defaults correct (`bIsPaused=false`, `PauseMenuWidget=None`); a fresh PIE session still fires the pre-existing `BeginPlay`→`WBP_HUD` chain with zero new runtime errors (confirms the new `IA_Pause` node didn't disturb the existing controller logic). **Not done:** an actual `Escape` keypress end-to-end test (would need the standalone `unreal-input-probe` SendInput technique) — structurally sound and using the exact same patterns already proven for crouch-toggle and the results screen, but genuinely untested with a real key event. Flag for the next session's first PIE playtest.
 
 ### 2c. Main menu (`WBP_MainMenu`)
 **SUB-STATUS: [ ] NOT STARTED** — lowest urgency, do last if time allows.
