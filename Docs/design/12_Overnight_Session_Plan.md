@@ -135,17 +135,18 @@ The user explicitly asked for loot tonight, overriding doc 11's own "don't build
 
 ## 5. Stealth mechanics — mostly built; re-verify before adding anything new
 
-**STATUS: [~] IN PROGRESS** — one specific regression found tonight, not yet fixed.
-**BLOCKED ON:** MCP reconnection (found via the MCP-free probe, needs MCP tools to actually fix).
+**STATUS: [~] IN PROGRESS — re-tested fresh (MCP now live), regression CONFIRMED but flipped which instance it affects. Needs the human (`Build → Build Paths`), not fixable from this session.**
+**BLOCKED ON:** no MCP tool exists to trigger NavMesh rebuild or read tile/build status — confirmed again this session (full `list_toolsets` scan, nothing nav-rebuild-related exists). `SceneTools.load_level` reload was tried as the one available lever and did NOT fix it.
 
 Most of the mechanical stealth loop is already built and was verified working in recent sessions: detection meter, 4-state alert, sight+hearing perception, the mesh-based vision cone (confirmed still present tonight), hiding bushes, hedge squeeze, sensor light, the loudness ladder, catch→detain→respawn. **Don't rebuild any of this.**
 
-**Do, in order:**
-1. **Fix the sandbox AI Watcher — tonight's MCP-free probe already isolated this, don't re-diagnose from zero.** Sampled `CharacterMovementComponent.Velocity` for both Watchers 3× across ~2 real minutes: **Maple Court's Watcher is confirmed actively patrolling** (different nonzero velocity each sample). **The sandbox Watcher read exactly `(0,0,0)` all three times.** Since the sibling class works fine with the same `TickBrain` shape, check instance-specific state first: the sandbox Watcher's gathered `PatrolPoints` array (empty or off-navmesh?), its `NavMeshBoundsVolume` coverage, whether `BeginPlay` even fires (compare to Maple Court's). Don't touch the shared brain logic until instance-specific state is ruled out.
-2. If both Watchers move correctly after the fix: this system is in good shape. Time permitting, consider a second AI archetype (the game names both "homeowners" and "cops" — only one exists). Stretch goal, not required.
-3. If the instance-specific check doesn't explain it: fall back to known prior culprits — `SupportedAgents` in `Config/DefaultEngine.ini` (needs an editor restart), NavMesh `Build → Build Paths`.
+**Re-tested this session (LESSONS 2026-07-03 "AI Watcher re-test"), and the finding REVERSED from the prior session's:** previously sandbox was stuck / Maple Court fine; now **Maple Court's Watcher (`BP_WatcherController_MC_C_0`) is the one frozen** (exact position+rotation unchanged across 35+ real seconds, survived a fresh PIE session AND a level reload) while the **sandbox Watcher now patrols fine**. Ruled out: NavMeshBoundsVolume coverage (geometrically covers the frozen spot), `BeginPlay` not firing (`homeLocation`/`watcherProfile` both correctly initialized). **Conclusion: this is not "instance X is permanently broken" — it's an intermittent NavMesh-build-data issue that can affect either Watcher depending on session state.** Don't spend a future session's time re-diagnosing "why is Watcher X stuck" as if it's a fixed property — the affected instance may have moved again by the time you check.
 
-**Verify:** fresh PIE, sample the sandbox Watcher's velocity at 2+ points across a real ~20s gap, confirm nonzero at least once (matching the standard already met by Maple Court tonight).
+**The only real fix path (matches this bug's entire prior history in this project):** a human opens the editor and runs `Build → Build Paths` once (optionally `P` first to visually confirm empty/broken NavMesh tiles). This previously fixed both Watchers in one action; there's no reason to expect it won't again. **Not fixable via any current MCP tool** — confirmed via a full toolset inventory scan this session, not an assumption carried over from before.
+
+**If the human does this and both Watchers patrol correctly:** this system is in good shape, no further work needed here. Time permitting later, consider a second AI archetype (the game names both "homeowners" and "cops" — only one exists) — stretch goal, not required.
+
+**Verify (for whoever does the Build Paths fix):** fresh PIE, sample BOTH Watchers' position at 2+ points across a real ~20s gap (use `Bash sleep`, not just consecutive tool calls — a real wall-clock gap is what makes this test conclusive), confirm both show nonzero movement.
 
 ---
 
