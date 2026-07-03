@@ -59,7 +59,7 @@ Tonight's standalone-probe diagnostic (LESSONS 2026-07-03) confirmed the histori
 
 ## 2. Menu system
 
-**STATUS: [~] IN PROGRESS** (three sub-items — track each independently, see sub-status lines; 2a + 2b done, 2c remains)
+**STATUS: [x] DONE** (three sub-items, all built — see sub-status lines for each one's exact verification level)
 
 `09_Design_Review_Punchlist.md` §C confirms: no menu doc, no results-screen design, menus explicitly parked. `UMGToolSet` is confirmed MCP-buildable (`WBP_HUD` proof). Build in order — results screen first (closes the core loop), then pause, then main menu.
 
@@ -78,11 +78,12 @@ Tonight's standalone-probe diagnostic (LESSONS 2026-07-03) confirmed the histori
 - **Verified:** compiled clean on both `BP_PlayerController` and `WBP_PauseMenu`; `get_node_infos` confirmed every pin wired to the right index; CDO defaults correct (`bIsPaused=false`, `PauseMenuWidget=None`); a fresh PIE session still fires the pre-existing `BeginPlay`→`WBP_HUD` chain with zero new runtime errors (confirms the new `IA_Pause` node didn't disturb the existing controller logic). **Not done:** an actual `Escape` keypress end-to-end test (would need the standalone `unreal-input-probe` SendInput technique) — structurally sound and using the exact same patterns already proven for crouch-toggle and the results screen, but genuinely untested with a real key event. Flag for the next session's first PIE playtest.
 
 ### 2c. Main menu (`WBP_MainMenu`)
-**SUB-STATUS: [ ] NOT STARTED** — lowest urgency, do last if time allows.
-- Shown at `BeginPlay`, layered on top of the existing HUD creation chain — append, don't touch it.
-- "Play" → remove self + `SetInputMode_GameOnly`. "Quit" → `QuitGame`.
-- **Positive finding to reconfirm while here, not re-litigate:** tonight's standalone log showed `BP_PlayerController`'s `BeginPlay` firing fine (`"...BeginPlay fired, creating WBP_HUD"`) — the old "cold-load BeginPlay doesn't fire" flag in `CLAUDE.md` looks stale. Confirm once, update the record either way.
-- **Verify:** cold standalone launch, main menu appears before the player can move, Play button hands off control correctly.
+**SUB-STATUS: [x] DONE — built, wired, compiled clean; verified structurally (widget created, no runtime errors, HUD chain confirmed intact downstream), not via a real Play-button click (matches this project's established verification ceiling for the other 2 menus).**
+- `WBP_MainMenu` (`_Project/UI/`): same dark-Border + centered-VerticalBox pattern as the other 2 menus. "POOL HOP" title (56pt, cyan) + "Sneak. Hop. Escape before dawn." subtitle + Play/Quit buttons.
+- Spliced into `BP_PlayerController.EventBeginPlay` at the very FRONT (before the existing HUD-creation `PrintString`→`CreateWidget(WBP_HUD)` chain) via the standard break-link/insert/reconnect pattern — confirmed via `get_node_infos` that the original chain (starting at the `"...BeginPlay fired, creating WBP_HUD"` PrintString) is untouched and still correctly fed, just now downstream of the new menu-creation nodes instead of directly off `EventBeginPlay`.
+- `PlayButton.OnClicked` → `RemoveFromParent` → `GetOwningPlayer` → `SetInputMode_GameOnly`. `QuitButton.OnClicked` → `QuitGame`.
+- **Confirms the old "cold-load BeginPlay doesn't fire" flag is indeed stale** (already suspected, now directly re-confirmed): `BP_PlayerController.MainMenuWidget` read as a valid, non-null created widget instance in a fresh PIE session, proving `BeginPlay` fired all the way through the new front-spliced logic.
+- **Verify:** compiled clean (`warnings_as_errors=true`), live PIE confirmed `MainMenuWidget` created (non-null), zero `Accessed None`/error entries in `LogBlueprint`/`LogBlueprintUserMessages`. **Not done:** an actual Play/Quit button click (needs real Slate input — same ceiling as the pause menu's Resume/Restart buttons).
 
 ---
 
