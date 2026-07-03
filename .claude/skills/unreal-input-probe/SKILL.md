@@ -25,6 +25,13 @@ Together: a full drive-and-observe loop for a running game from plain PowerShell
 - `obj list class=<Class>` — instance census to the log.
 - **Multiple concurrent UE processes redirect the log file**: if the editor already holds `Saved/Logs/<Project>.log` open, a standalone `-game` instance's log silently goes to `<Project>_2.log` (then `_3`, etc. for further instances). Check `ls -la Saved/Logs/` for the newest one before grepping — grepping the primary log after launching a second instance finds nothing.
 
+## computer-use cannot target the Unreal Editor either (re-confirmed 2026-07-03, not just the standalone game)
+
+This skill's header already flagged computer-use failing on the **standalone game** window. Separately re-confirmed this session that it also can't see the **editor** process: `mcp__computer-use__request_access` with `apps:["Unreal Editor"]` and `apps:["UnrealEditor"]` both returned `notInstalled` — the tool's app-matching doesn't recognize either name as an installed/running application, so the request is never even shown to the user. This means computer-use is a dead end for **any** Unreal-related window on this machine, editor or game — don't re-attempt it for either. Practical split going forward:
+- **Editor state changes** (spawn actors, edit Blueprints, read/write properties, start/stop PIE, teleport actors) → `unreal-mcp` tools, no screenshots needed.
+- **Real gameplay keyboard/mouse input** → this skill's `probe-input.ps1` (OS-level `SendInput`).
+- **Editor-only menu actions with no MCP equivalent** (e.g. `Build → Build Paths`, dismissing a modal dialog) → currently no automated path; ask the user to click it. Small, bounded gap — not a sign the workflow is generally screenshot-driven.
+
 ## Verification doctrine
 
 - **Only a fresh process tests what's on disk.** PIE right after in-session authoring exercises dirty in-memory objects — the exact trap that hid the empty-IMC bug for days. Standalone `-game` (or editor restart, then PIE) is the disk-truth test.
