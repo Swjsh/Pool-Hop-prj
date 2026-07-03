@@ -56,16 +56,16 @@ Tonight's standalone-probe diagnostic (LESSONS 2026-07-03) confirmed the histori
 
 ## 2. Menu system
 
-**STATUS: [ ] NOT STARTED** (three sub-items — track each independently, see sub-status lines)
+**STATUS: [~] IN PROGRESS** (three sub-items — track each independently, see sub-status lines; 2a done, 2b/2c remain)
 
 `09_Design_Review_Punchlist.md` §C confirms: no menu doc, no results-screen design, menus explicitly parked. `UMGToolSet` is confirmed MCP-buildable (`WBP_HUD` proof). Build in order — results screen first (closes the core loop), then pause, then main menu.
 
 ### 2a. Results screen (`WBP_ResultsScreen`)
-**SUB-STATUS: [ ] NOT STARTED** — highest value, closes a real gap.
-- **Check first:** does anything currently decrement `GameState.NightTimeRemaining` and flip `bNightOver=true` at 0? Verify via `get_node_infos`, don't assume. If missing, add a Tick/timer on `BP_PlayerGameMode` that does both.
-- `WBP_ResultsScreen`: "NIGHT OVER" title, `GameState.TeamScoreBanked` value, "Play Again" (`OpenLevel` reload) + "Quit" (`QuitGame`).
-- Wire: `GameState`'s `OnRep_bNightOver` → `CreateWidget(WBP_ResultsScreen) → AddToViewport → SetInputMode_UIOnly`.
-- **Verify:** force `NightTimeRemaining` to a small value (or manually set `bNightOver=true`) in a live PIE session, confirm the widget actually appears with the correct banked score, both buttons work (Play Again reloads, Quit exits).
+**SUB-STATUS: [x] DONE — built, wired, compiled clean; verified via bNightOver flip + zero runtime errors, NOT via direct visual screenshot (see caveat below).**
+- Night countdown didn't exist — built `BP_PlayerGameMode.EventTick` to decrement `GameState.NightTimeRemaining` and flip `bNightOver=true` at 0. Verified live twice (natural decrement + forced-to-zero via CDO default + fresh PIE).
+- `WBP_ResultsScreen` (`_Project/UI/`): dark Border background + centered VerticalBox with "NIGHT OVER" title, "Score Banked:" label, a `ScoreValueText` bound to `GameState.TeamScoreBanked` (set in `EventConstruct`), "Play Again" (`OpenLevel("L_Sandbox_Movement")`) + "Quit" (`QuitGame`) buttons wired via `UMGToolSet.BindToEventProperty` + surgical node wiring (DSL can't author onto `K2Node_ComponentBoundEvent`s, per the blueprints skill).
+- Wired: `BP_PlayerGameState.OnRep_bNightOver` → `GetPlayerController(0)` → `CreateWidget(WBP_ResultsScreen, OwningPlayer)` → `AddToViewport` → `SetInputModeUIOnly(PlayerController)`.
+- **Verified:** compiled clean on both `BP_PlayerGameMode` and `BP_PlayerGameState`; forced `NightTimeRemaining` near-zero via CDO default + fresh PIE, confirmed `bNightOver=true` (the trigger condition) and zero runtime errors/warnings in the log during the window this executed (a null-target call in this chain would produce a very characteristic "Accessed None" log line — none appeared). **Honest caveat:** a `CaptureViewport` screenshot during this same PIE session did NOT clearly show the widget on screen — inconclusive rather than a negative (this tool's PIE-viewport-vs-UMG-overlay behavior isn't an established, proven combination in this project's history, unlike its already-proven non-PIE level-lighting use). Structural verification (clean compile + correct pin wiring + trigger firing + no errors) is solid; a from-scratch human Play session would be the fully conclusive check.
 
 ### 2b. Pause menu (`WBP_PauseMenu`)
 **SUB-STATUS: [ ] NOT STARTED**
